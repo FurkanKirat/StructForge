@@ -416,3 +416,16 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+## Visual Studio / .NET ignore (senin verdiğin liste buraya zaten dahil)
+
+# --- JetBrains Rider / IntelliJ IDEA ---
+.idea/
+*.iws
+*.iml
+*.ipr
+workspace.xml
+tasks.xml
+usage.statistics.xml
+shelf/
+
