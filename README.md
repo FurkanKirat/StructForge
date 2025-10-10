@@ -1,5 +1,8 @@
 # StructForge
 
+[![NuGet](https://img.shields.io/nuget/v/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 **StructForge** is a lightweight, educational, and practical C# library for learning and experimenting with fundamental data structures and algorithms. It provides a range of generic collections, sorting algorithms, and interfaces for building your own high-level structures.
 
 ---
@@ -92,6 +95,13 @@ Console.WriteLine(string.Join(", ", arr)); // 1, 2, 5, 5, 6, 9
 ## Contribution
 
 Contributions are welcome! Feel free to open issues, add features, or improve existing code. Keep in mind that this library is primarily **educational**.
+
+## 📦 Installation
+
+You can install the latest version via **NuGet**:
+
+```bash
+dotnet add package StructForge
 
 ---
 
