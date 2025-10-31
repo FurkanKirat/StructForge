@@ -8,10 +8,12 @@
 
 ### Collections
 
-* **Lists**: `SfList<T>`, `SfLinkedList<T>` (with nodes and full linked list operations)
+* **Lists**: `SfList<T>`, `SfLinkedList<T>`
 * **Stacks & Queues**: `SfStack<T>`, `SfQueue<T>`
 * **Heaps & Priority Queues**: `SfBinaryHeap<T>`, `SfMaxHeap<T>`, `SfMinHeap<T>`, `SfPriorityQueue<TItem, TPriority>`
 * **Binary Search Trees**: `SfBinarySearchTree<T>`
+* **Trees**: `SfBinarySearchTree<T>, SfAvlTree<T>`
+* **Sets & Dictionaries**: `SfSortedSet<T>, SfSortedDictionary<TKey, TValue>`
 
 ### Sorting Algorithms
 
@@ -20,13 +22,38 @@
 
 ### Interfaces
 
-* `IDataStructure<T>`: Base interface for all collections
-* `IHeap<T>`: Generic heap interface
-* `ILinkedList<T>`: Doubly-linked list interface
-* `IQueue<T>`: Queue interface
-* `ISequence<T>`: Sequence interface
-* `IStack<T>`: Stack interface
-* `ITree<T>`: Tree interface
+* `ISfDataStructure<T>`: Base interface for all collections
+* `ISfList<T>`: List interface
+* `ISfLinkedList<T>`: Doubly-linked list interface
+* `ISfStack<T>`: Stack interface
+* `ISfQueue<T>`: Queue interface
+* `ISfHeap<T>`: Generic heap interface
+* `ISfTree<T>`: Tree interface
+* `ISfDictionary<T>`: Dictionary interface
+
+###  Algorithms & Utilities
+
+* Sorting
+
+SfSorting.QuickSort(...)
+
+SfSorting.TreeSort(...)
+
+SfSorting.HeapSort(...)
+
+* Searching
+
+SfAlgorithms.BinarySearch(...)
+
+* Randomization
+
+SfAlgorithms.Shuffle(...)
+
+* Comparers
+
+SfComparers<T> – default comparer access
+
+SfComparerUtils – helper utilities for key/value and custom comparers
 
 ### Key Capabilities
 
@@ -48,12 +75,48 @@ dotnet add package StructForge
 Or clone the repository and include the `StructForge` project in your solution:
 
 ```bash
-git clone https://github.com/yourusername/StructForge.git
+git clone https://github.com/FurkanKirat/StructForge.git
 ```
 
 ---
 
 ## Usage Examples
+
+### Sorted Dictionary
+
+```csharp
+var dict = new SfSortedDictionary<string, int>();
+dict.Add("apple", 3);
+dict.Add("banana", 1);
+dict.Add("cherry", 2);
+
+foreach (var kv in dict)
+Console.WriteLine($"{kv.Key}: {kv.Value}");
+// Output:
+// banana: 1
+// cherry: 2
+// apple: 3
+```
+
+### Shuffle and Binary Search
+
+```csharp
+int[] data = { 1, 2, 3, 4, 5, 6 };
+SfShuffleExtensions.Shuffle(data);
+int index = SfSearching.BinarySearch(data, 4);
+
+```
+### AVL Tree
+
+```csharp
+var avl = new SfAvlTree<int>();
+avl.Add(10);
+avl.Add(5);
+avl.Add(15);
+avl.Add(7);
+
+Console.WriteLine($"Min: {avl.Min}, Max: {avl.Max}, Count: {avl.Count}");
+```
 
 ### Linked List
 
@@ -83,7 +146,7 @@ foreach (var item in pq.EnumerateByPriority())
 
 ```csharp
 int[] arr = { 5, 2, 9, 1, 5, 6 };
-Quicksort.Sort(arr);
+SfSorting.Quicksort(arr);
 Console.WriteLine(string.Join(", ", arr)); // 1, 2, 5, 5, 6, 9
 ```
 

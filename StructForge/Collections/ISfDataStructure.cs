@@ -7,7 +7,7 @@ namespace StructForge.Collections
     /// Represents a generic data structure.
     /// </summary>
     /// <typeparam name="T">The type of elements in the data structure.</typeparam>
-    public interface IDataStructure<T> : IReadOnlyCollection<T>
+    public interface ISfDataStructure<T> : IReadOnlyCollection<T>
     {
         /// <summary>
         /// Returns true if the collection contains no elements.
@@ -46,10 +46,5 @@ namespace StructForge.Collections
         /// <param name="array">Destination array.</param>
         /// <param name="arrayIndex">Zero-based index at which copying begins.</param>
         void CopyTo(T[] array, int arrayIndex);
-
-        /// <summary>
-        /// Returns a new array containing the elements of the collection.
-        /// </summary>
-        T[] ToArray();
     }
 }

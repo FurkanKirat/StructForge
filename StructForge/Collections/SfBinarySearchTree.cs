@@ -1,8 +1,9 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -10,7 +11,8 @@ namespace StructForge.Collections
     /// A generic Binary Search Tree (BST) implementation.
     /// Supports insertion, deletion, search, and traversal.
     /// </summary>
-    public class SfBinarySearchTree<T> : ITree<T>, ICollection<T>
+    [Obsolete("Use SfAvlTree<T> instead. This class is kept for educational purposes.")]
+    public class SfBinarySearchTree<T> : ISfTree<T>, ICollection<T>
     {
         private SfBinaryTreeNode<T> _root;
         private readonly IComparer<T> _comparer;
@@ -36,7 +38,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfBinarySearchTree(IComparer<T> comparer = null)
         {
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
         }
         
         /// <summary>
@@ -47,7 +49,7 @@ namespace StructForge.Collections
             if (enumerable == null) 
                 throw new ArgumentNullException(nameof(enumerable));
 
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
 
             T[] arr = enumerable.ToArray();
             Array.Sort(arr, _comparer);
@@ -80,7 +82,7 @@ namespace StructForge.Collections
         {
             if (_root == null) yield break;
 
-            SfStack<SfBinaryTreeNode<T>> sfStack = new SfStack<SfBinaryTreeNode<T>>();
+            SfStack<SfBinaryTreeNode<T>> sfStack = new SfStack<SfBinaryTreeNode<T>>(Count);
             SfBinaryTreeNode<T> current = _root;
 
             while (current != null || sfStack.Count > 0)
@@ -105,7 +107,7 @@ namespace StructForge.Collections
         {
             if (_root == null) yield break;
 
-            SfStack<SfBinaryTreeNode<T>> sfStack = new SfStack<SfBinaryTreeNode<T>>();
+            SfStack<SfBinaryTreeNode<T>> sfStack = new SfStack<SfBinaryTreeNode<T>>(Count);
             sfStack.Push(_root);
 
             while (sfStack.Count > 0)
@@ -125,8 +127,8 @@ namespace StructForge.Collections
         {
             if (_root == null) yield break;
 
-            SfStack<SfBinaryTreeNode<T>> stack1 = new SfStack<SfBinaryTreeNode<T>>();
-            SfStack<SfBinaryTreeNode<T>> stack2 = new SfStack<SfBinaryTreeNode<T>>();
+            SfStack<SfBinaryTreeNode<T>> stack1 = new SfStack<SfBinaryTreeNode<T>>(Count);
+            SfStack<SfBinaryTreeNode<T>> stack2 = new SfStack<SfBinaryTreeNode<T>>(Count);
 
             stack1.Push(_root);
             while (stack1.Count > 0)
@@ -140,6 +142,29 @@ namespace StructForge.Collections
 
             while (stack2.Count > 0)
                 yield return stack2.Pop().Value;
+        }
+
+        public bool TryGetValue(T equalValue, out T actualValue)
+        {
+            var node = _root;
+            while (node != null)
+            {
+                switch (_comparer.Compare(node.Value, equalValue))
+                {
+                    case > 0:
+                        node = node.Left;
+                        break;
+                    case < 0:
+                        node = node.Right;
+                        break;
+                    default:
+                        actualValue = node.Value;
+                        return true;
+                }
+            }
+
+            actualValue = default;
+            return false;
         }
 
         public void ForEach(Action<T> action)
@@ -204,9 +229,6 @@ namespace StructForge.Collections
             return true;
         }
 
-
-        
-
         /// <summary>
         /// Removes all nodes from the tree.
         /// </summary>
@@ -245,18 +267,6 @@ namespace StructForge.Collections
                 if (comparer.Equals(item, element)) return true;
             }
             return false;
-        }
-
-        public T[] ToArray()
-        {
-            T[] array = new T[Count];
-            int i = 0;
-
-            foreach (T element in this)
-            {
-                array[i] = element;
-            }
-            return array;
         }
 
         /// <summary>
@@ -422,6 +432,7 @@ namespace StructForge.Collections
         
     }
     
+    [DebuggerDisplay("{Value}")]
     internal class SfBinaryTreeNode<T>
     {
         internal T Value;

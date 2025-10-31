@@ -7,7 +7,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Add_IncreasesCount()
         {
-            ISequence<int> list = new SfList<int>();
+            ISfList<int> list = new SfList<int>();
             list.Add(1);
             list.Add(2);
 
@@ -25,7 +25,7 @@ namespace StructForge.Tests.Collections
             int oldCapacity = list.Capacity;
 
             list.Clear();
-
+            
             Assert.Empty(list);
             Assert.Equal(oldCapacity, list.Capacity);
         }

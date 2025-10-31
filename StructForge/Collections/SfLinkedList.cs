@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -10,7 +9,7 @@ namespace StructForge.Collections
     /// Supports adding/removing elements at both ends, insertion, deletion, and enumeration.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the list.</typeparam>
-    public class SfLinkedList<T> : ILinkedList<T>
+    public class SfLinkedList<T> : ISfLinkedList<T>
     {
         /// <summary>Number of elements in the list.</summary>
         public int Count { get; private set; }
@@ -39,6 +38,7 @@ namespace StructForge.Collections
         /// <param name="enumerable">Collection of items to add to the list.</param>
         public SfLinkedList(IEnumerable<T> enumerable)
         {
+            ArgumentNullException.ThrowIfNull(enumerable);
             SfLinkedListNode<T> current = null;
             foreach (var item in enumerable)
             {
@@ -139,20 +139,7 @@ namespace StructForge.Collections
                 current = current.Next;
             }
         }
-
-        /// <summary>Returns the elements of the list as an array.</summary>
-        public T[] ToArray()
-        {
-            T[] array = new T[Count];
-            SfLinkedListNode<T> current = _head;
-            int index = 0;
-            while (current != null)
-            {
-                array[index++] = current.Value;
-                current = current.Next;
-            }
-            return array;
-        }
+        
 
         /// <summary>Adds an item at the beginning of the list.</summary>
         public void AddFirst(T item)

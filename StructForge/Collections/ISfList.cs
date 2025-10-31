@@ -7,7 +7,7 @@ namespace StructForge.Collections
     /// Represents a random-access, indexed collection (like a list).
     /// </summary>
     /// <typeparam name="T">The type of elements in the sequence.</typeparam>
-    public interface ISequence<T> : IDataStructure<T>
+    public interface ISfList<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Adds an item to the end of the sequence.

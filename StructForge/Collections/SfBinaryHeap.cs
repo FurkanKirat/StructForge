@@ -1,7 +1,7 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -11,7 +11,7 @@ namespace StructForge.Collections
     /// Can be used as a min-heap or max-heap depending on the comparer.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the heap.</typeparam>
-    public class SfBinaryHeap<T> : IHeap<T>
+    public abstract class SfBinaryHeap<T> : ISfHeap<T>
     {
         private readonly SfList<T> _data;
         private readonly IComparer<T> _comparer;
@@ -41,6 +41,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfBinaryHeap(IEnumerable<T> items, IComparer<T> comparer = null)
         {
+            ArgumentNullException.ThrowIfNull(items);
             _comparer = comparer ?? Comparer<T>.Default;
             _data = new SfList<T>();
             foreach (var item in items)
@@ -109,16 +110,6 @@ namespace StructForge.Collections
                 array[arrayIndex + i] = _data[i];
         }
 
-        /// <summary>Returns the elements of the heap as an array.</summary>
-        public T[] ToArray()
-        {
-            if (Count == 0) return Array.Empty<T>();
-            T[] result = new T[Count];
-            for (int i = 0; i < Count; ++i)
-                result[i] = _data[i];
-            return result;
-        }
-
         /// <summary>Performs the heapify-down operation from a given index.</summary>
         private void HeapifyDown(int index)
         {
@@ -174,24 +165,28 @@ namespace StructForge.Collections
     /// <summary>Represents a max-heap implementation.</summary>
     public class SfMaxHeap<T> : SfBinaryHeap<T>
     {
-        public SfMaxHeap(int capacity = SfList<T>.DefaultCapacity, float growthFactor = SfList<T>.DefaultGrowthFactor)
-            : base(capacity, growthFactor, Comparer<T>.Default) { }
+        public SfMaxHeap(int capacity = SfList<T>.DefaultCapacity, 
+            float growthFactor = SfList<T>.DefaultGrowthFactor, 
+            IComparer<T> comparer = null)
+            : base(capacity, growthFactor, comparer) { }
 
-        public SfMaxHeap(IEnumerable<T> items) : base(items, Comparer<T>.Default) { }
+        public SfMaxHeap(IEnumerable<T> items, IComparer<T> comparer = null) : base(items, comparer) { }
 
-        public SfMaxHeap(SfMaxHeap<T> heap) : base(heap) { }
+        public SfMaxHeap(SfBinaryHeap<T> heap) : base(heap) { }
     }
 
     /// <summary>Represents a min-heap implementation.</summary>
     public class SfMinHeap<T> : SfBinaryHeap<T>
     {
-        public SfMinHeap(int capacity = SfList<T>.DefaultCapacity, float growthFactor = SfList<T>.DefaultGrowthFactor)
-            : base(capacity, growthFactor, Comparer<T>.Create((a, b) => Comparer<T>.Default.Compare(b, a))) { }
+        public SfMinHeap(int capacity = SfList<T>.DefaultCapacity, 
+            float growthFactor = SfList<T>.DefaultGrowthFactor,
+            IComparer<T> comparer = null)
+            : base(capacity, growthFactor, comparer.Reverse()) { }
 
-        public SfMinHeap(IEnumerable<T> items) :
-            base(items, Comparer<T>.Create((a, b) => Comparer<T>.Default.Compare(b, a))) { }
+        public SfMinHeap(IEnumerable<T> items, IComparer<T> comparer = null) :
+            base(items, comparer.Reverse()) { }
 
-        public SfMinHeap(SfMinHeap<T> heap) : base(heap) { }
+        public SfMinHeap(SfBinaryHeap<T> heap) : base(heap) { }
     }
 
 }

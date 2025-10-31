@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace StructForge.Collections
     /// Additional methods: TrimExcess, PeekLast, TryPeekLast, ForEach.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the queue.</typeparam>
-    public class SfQueue<T> : IQueue<T>
+    public class SfQueue<T> : ISfQueue<T>
     {
         private const int DefaultCapacity = 4;
         private const float DefaultGrowthFactor = 2f;
@@ -68,7 +67,7 @@ namespace StructForge.Collections
             int extraCapacity = 0, 
             float growthFactor = DefaultGrowthFactor)
         {
-            if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
+            ArgumentNullException.ThrowIfNull(enumerable);
             if (enumerable is ICollection<T> collection)
             {
                 _array = new T[collection.Count + extraCapacity];
@@ -175,15 +174,6 @@ namespace StructForge.Collections
                 _array[(_start + i) % Capacity] = default;
             _start = 0;
             Count = 0;
-        }
-
-        /// <summary>Returns a snapshot of the queue as an array in FIFO order.</summary>
-        public T[] ToArray()
-        {
-            T[] result = new T[Count];
-            for (int i = 0; i < Count; i++)
-                result[i] = _array[(_start + i) % Capacity];
-            return result;
         }
 
         /// <summary>Checks if the queue contains the specified item using the default comparer.</summary>

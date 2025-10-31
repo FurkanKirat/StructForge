@@ -6,7 +6,7 @@ namespace StructForge.Collections
     /// Represents a first-in-first-out (FIFO) collection.
     /// </summary>
     /// <typeparam name="T">The type of elements in the queue.</typeparam>
-    public interface IQueue<T> : IDataStructure<T>
+    public interface ISfQueue<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Adds an item to the end of the queue.

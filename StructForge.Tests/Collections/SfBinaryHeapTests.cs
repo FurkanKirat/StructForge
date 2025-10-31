@@ -1,4 +1,6 @@
-﻿namespace StructForge.Tests.Collections;
+﻿using StructForge.Comparers;
+
+namespace StructForge.Tests.Collections;
 
 using Xunit;
 using StructForge.Collections;
@@ -130,4 +132,74 @@ public class SfBinaryHeapTests
             prev = current;
         }
     }
+    
+    record Entity(string Name, int Priority);
+
+    [Fact]
+    public void MaxHeap_Test()
+    {
+        var heap = new SfMaxHeap<int>();
+        heap.Add(5);
+        heap.Add(10);
+        heap.Add(3);
+
+        Assert.Equal(10, heap.Pop());
+        Assert.Equal(5, heap.Pop());
+        Assert.Equal(3, heap.Pop());
+        Assert.True(heap.IsEmpty);
+    }
+
+    [Fact]
+    public void MinHeap_Test()
+    {
+        var heap = new SfMinHeap<int>();
+        heap.Add(5);
+        heap.Add(10);
+        heap.Add(3);
+
+        Assert.Equal(3, heap.Pop());
+        Assert.Equal(5, heap.Pop());
+        Assert.Equal(10, heap.Pop());
+        Assert.True(heap.IsEmpty);
+    }
+
+    [Fact]
+    public void MaxHeap_WithCustomComparer_Test()
+    {
+        var heap = new SfMaxHeap<int>(comparer:SfComparers<int>.DefaultComparer);
+        heap.Add(1);
+        heap.Add(100);
+        heap.Add(50);
+
+        Assert.Equal(100, heap.Pop());
+        Assert.Equal(50, heap.Pop());
+        Assert.Equal(1, heap.Pop());
+    }
+
+    [Fact]
+    public void Heap_WithEntities_KeySelector_Test()
+    {
+        var heap = new SfMaxHeap<Entity>(comparer:SfComparers<Entity>.FromSelector<int>(e => e.Priority));
+        heap.Add(new Entity("Goblin", 5));
+        heap.Add(new Entity("Dragon", 10));
+        heap.Add(new Entity("Slime", 2));
+
+        Assert.Equal("Dragon", heap.Pop().Name);
+        Assert.Equal("Goblin", heap.Pop().Name);
+        Assert.Equal("Slime", heap.Pop().Name);
+    }
+
+    [Fact]
+    public void PriorityQueue_MinHeap_Test()
+    {
+        var pq = new SfPriorityQueue<string, int>(minHeap: true);
+        pq.Enqueue("Low", 1);
+        pq.Enqueue("Medium", 5);
+        pq.Enqueue("High", 10);
+
+        Assert.Equal("Low", pq.Dequeue());
+        Assert.Equal("Medium", pq.Dequeue());
+        Assert.Equal("High", pq.Dequeue());
+    }
+
 }

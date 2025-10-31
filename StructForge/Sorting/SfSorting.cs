@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using StructForge.Collections;
 
 namespace StructForge.Sorting
@@ -58,17 +57,33 @@ namespace StructForge.Sorting
         /// TreeSort uses a simple BST and does not support duplicate values.
         /// Not safe to use with sequences containing duplicates.
         /// </summary>
-        public static void TreeSort<T>(ISequence<T> sequence, IComparer<T> comparer)
+        public static void TreeSort<T>(IList<T> sequence, IComparer<T> comparer)
         {
             if (sequence.Count <= 1)
                 return;
             
-            SfBinarySearchTree<T> tree = new SfBinarySearchTree<T>(sequence, comparer);
+            SfAvlTree<T> tree = new SfAvlTree<T>(sequence, comparer);
             int i = 0;
             foreach (T item in tree)
             {
                 sequence[i] = item;
                 i++;
+            }
+        }
+        #endregion
+
+        #region HeapSort
+        public static void HeapSort<T>(IList<T> sequence, IComparer<T> comparer)
+        {
+            if (sequence.Count <= 1)
+                return;
+            
+            SfMaxHeap<T> maxHeap = new SfMaxHeap<T>(sequence, comparer);
+
+            while (maxHeap.Count > 0)
+            {
+                T item = maxHeap.Pop();
+                sequence[maxHeap.Count] = item;
             }
         }
         #endregion

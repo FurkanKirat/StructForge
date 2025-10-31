@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -9,7 +8,7 @@ namespace StructForge.Collections
     /// Represents a last-in-first-out (LIFO) stack of objects.
     /// </summary>
     /// <typeparam name="T">The type of elements in the stack.</typeparam>
-    public class SfStack<T> : IStack<T>
+    public class SfStack<T> : ISfStack<T>
     {
         private readonly SfList<T> _data;
 
@@ -50,6 +49,7 @@ namespace StructForge.Collections
             int extraCapacity = 0, 
             float growthFactor = SfList<T>.DefaultGrowthFactor)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             _data = new SfList<T>(collection, extraCapacity, growthFactor);
         }
         
@@ -122,18 +122,7 @@ namespace StructForge.Collections
         {
             _data.Clear();
         }
-
-        /// <summary>
-        /// Returns a new array containing elements from top to bottom.
-        /// </summary>
-        public T[] ToArray()
-        {
-            T[] result = new T[Count];
-            for (int i = 0; i < Count; i++)
-                result[i] = _data[Count - 1 - i];
-            return result;
-        }
-
+        
         #endregion
 
         #region Stack Operations

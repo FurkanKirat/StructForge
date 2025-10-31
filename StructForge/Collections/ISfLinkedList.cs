@@ -4,7 +4,7 @@
     /// Represents a generic linked list with methods for adding, removing, and finding elements.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the linked list.</typeparam>
-    public interface ILinkedList<T> : IDataStructure<T>
+    public interface ISfLinkedList<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Adds an item at the beginning of the list.

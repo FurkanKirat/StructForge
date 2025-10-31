@@ -6,7 +6,7 @@ namespace StructForge.Collections
     /// Represents a generic heap (priority queue) data structure.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the heap.</typeparam>
-    public interface IHeap<T> : IDataStructure<T>
+    public interface ISfHeap<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Adds an item to the heap while maintaining the heap property.

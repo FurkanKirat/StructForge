@@ -1,8 +1,8 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using StructForge.Comparers;
 using StructForge.Sorting;
 
 namespace StructForge.Collections
@@ -12,7 +12,7 @@ namespace StructForge.Collections
     /// Supports Add, Insert, Remove, RemoveAt, Indexer access, CopyTo, and enumeration.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the list.</typeparam>
-    public class SfList<T> : IList<T>, ISequence<T>
+    public class SfList<T> : IList<T>, ISfList<T>
     {
         private T[] _array;
         private readonly float _growthFactor;
@@ -251,7 +251,7 @@ namespace StructForge.Collections
             Count--;
         }
 
-        public void Sort() => Sort(Comparer<T>.Default);
+        public void Sort() => Sort(SfComparers<T>.DefaultComparer);
 
         public void Sort(IComparer<T> comparer) => SfSorting.QuickSort(this, comparer);
         public void Swap(int i, int j)
@@ -312,16 +312,6 @@ namespace StructForge.Collections
             }
         }
         
-        /// <summary>
-        /// Returns a new array containing the elements of the list.
-        /// </summary>
-        public T[] ToArray()
-        {
-            T[] array = new T[Count];
-            CopyTo(array, 0);
-            return array;
-        }
-
         /// <summary>
         /// Reverses the order of elements in the list in-place.
         /// </summary>

@@ -1,5 +1,4 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -11,9 +10,10 @@ namespace StructForge.Collections
     /// </summary>
     /// <typeparam name="TItem">Type of the items.</typeparam>
     /// <typeparam name="TPriority">Type of the priority values.</typeparam>
-    public class SfPriorityQueue<TItem, TPriority> : IDataStructure<TItem>
+    public class SfPriorityQueue<TItem, TPriority> : ISfDataStructure<TItem>
     {
         private readonly SfBinaryHeap<(TItem item, TPriority priority)> _heap;
+        private readonly bool _isMinHeap;
 
         /// <summary>Number of items in the queue.</summary>
         public int Count => _heap.Count;
@@ -27,12 +27,20 @@ namespace StructForge.Collections
         public SfPriorityQueue(IComparer<TPriority> comparer = null, bool minHeap = true)
         {
             comparer ??= Comparer<TPriority>.Default;
-            var tupleComparer = Comparer<(TItem item, TPriority priority)>.Create((a, b) =>
-                minHeap
-                    ? comparer.Compare(b.priority, a.priority)
-                    : comparer.Compare(a.priority, b.priority)
-            );
-            _heap = new SfBinaryHeap<(TItem item, TPriority priority)>(comparer: tupleComparer);
+            var tupleComparer = 
+                Comparer<(TItem item, TPriority priority)>.Create((a, b) => 
+                    comparer.Compare(a.priority, b.priority));
+
+            if (minHeap)
+            {
+                _heap = new SfMinHeap<(TItem item, TPriority priority)>(comparer: tupleComparer);
+            }
+            else
+            {
+                _heap = new SfMaxHeap<(TItem item, TPriority priority)>(comparer: tupleComparer);
+            }
+            _isMinHeap = minHeap;
+            
         }
 
         /// <summary>Adds an item with a priority.</summary>
@@ -57,7 +65,11 @@ namespace StructForge.Collections
         /// <summary>Enumerates items in priority order without modifying the queue.</summary>
         public IEnumerable<TItem> EnumerateByPriority()
         {
-            var copy = new SfBinaryHeap<(TItem item, TPriority priority)>(_heap);
+            SfBinaryHeap<(TItem item, TPriority priority)> copy;
+            if (_isMinHeap)
+                copy = new SfMinHeap<(TItem item, TPriority priority)>(_heap);
+            else 
+                copy = new SfMaxHeap<(TItem item, TPriority priority)>(_heap);
             while (!copy.IsEmpty)
                 yield return copy.Pop().item;
         }
@@ -98,16 +110,7 @@ namespace StructForge.Collections
             foreach (var (item, _) in _heap)
                 array[arrayIndex++] = item;
         }
-
-        /// <summary>Returns all items as an array.</summary>
-        public TItem[] ToArray()
-        {
-            if (IsEmpty) return Array.Empty<TItem>();
-
-            TItem[] array = new TItem[Count];
-            CopyTo(array, 0);
-            return array;
-        }
+        
     }
 
     

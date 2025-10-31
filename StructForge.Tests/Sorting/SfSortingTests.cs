@@ -1,9 +1,10 @@
 ﻿using StructForge.Collections;
+using StructForge.Comparers;
 using StructForge.Sorting;
 
 namespace StructForge.Tests.Sorting;
 
-public class SortingTests
+public class SfSortingTests
 {
     private readonly Random _random = new Random();
     private (SfList<int> testList, SfList<int> expected) GetIntList(Action<SfList<int>> sort)
@@ -34,8 +35,7 @@ public class SortingTests
     public void TreeSort_IntTest()
     {
         var intTest = GetIntList(
-            list => SfSorting.TreeSort(list, Comparer<int>.Create((x, y) => x > y ? 1 : -1))
-        );
+            list => SfSorting.TreeSort(list, SfComparers<int>.DefaultComparer));
         Assert.Equal(intTest.expected, intTest.testList);
     }
 
@@ -52,7 +52,7 @@ public class SortingTests
     public void QuickSort_IntTest()
     {
         var intTest = GetIntList(
-            list => SfSorting.QuickSort(list, Comparer<int>.Create((x, y) => x > y ? 1 : -1))
+            list => SfSorting.QuickSort(list, SfComparers<int>.DefaultComparer)
         );
         Assert.Equal(intTest.expected, intTest.testList);
     }
@@ -62,6 +62,23 @@ public class SortingTests
     {
         var charTest = GetCharList(
             list => SfSorting.QuickSort(list, Comparer<char>.Default)
+        );
+        Assert.Equal(charTest.expected, charTest.testList);
+    }
+    
+    [Fact]
+    public void HeapSort_IntTest()
+    {
+        var intTest = GetIntList(
+            list => SfSorting.HeapSort(list, SfComparers<int>.DefaultComparer));
+        Assert.Equal(intTest.expected, intTest.testList);
+    }
+
+    [Fact]
+    public void HeapSort_CharTest()
+    {
+        var charTest = GetCharList(
+            list => SfSorting.HeapSort(list, Comparer<char>.Default)
         );
         Assert.Equal(charTest.expected, charTest.testList);
     }

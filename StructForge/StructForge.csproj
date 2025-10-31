@@ -1,9 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<LangVersion>9</LangVersion>
+		<Nullable>disable</Nullable>
+		<PackageId>StructForge</PackageId>
+		<Version>1.1.0</Version>
+		<Authors>Furkan Kırat</Authors>
+		<Company>KankanGames</Company>
+		<Description>A light-weight data structure library for learning and production use.</Description>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
+		<PackageReleaseNotes>Initial release v1.0</PackageReleaseNotes>
+	</PropertyGroup>
+	
+	<ItemGroup>
+		<None Include="..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <LangVersion>9</LangVersion>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+
 
 </Project>

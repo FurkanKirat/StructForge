@@ -5,6 +5,7 @@ namespace StructForge.Tests.Collections
 {
     public class SfPriorityQueueTests
     {
+        record Entity(string Name, int Priority);
         [Fact]
         public void Enqueue_Dequeue_ShouldFollowPriorityOrder_MaxHeap()
         {
@@ -128,6 +129,32 @@ namespace StructForge.Tests.Collections
         {
             var pq = new SfPriorityQueue<int, int>();
             Assert.Throws<InvalidOperationException>(() => pq.Peek());
+        }
+        
+        [Fact]
+        public void PriorityQueue_MaxHeap_WithComparer_Test()
+        {
+            var pq = new SfPriorityQueue<string, int>(Comparer<int>.Default, minHeap: false);
+            pq.Enqueue("Low", 1);
+            pq.Enqueue("Medium", 5);
+            pq.Enqueue("High", 10);
+
+            Assert.Equal("High", pq.Dequeue());
+            Assert.Equal("Medium", pq.Dequeue());
+            Assert.Equal("Low", pq.Dequeue());
+        }
+
+        [Fact]
+        public void PriorityQueue_WithEntities_KeySelector_Test()
+        {
+            var pq = new SfPriorityQueue<Entity, int>(minHeap: false);
+            pq.Enqueue(new Entity("Goblin", 5), 5);
+            pq.Enqueue(new Entity("Dragon", 10), 10);
+            pq.Enqueue(new Entity("Slime", 2), 2);
+
+            Assert.Equal("Dragon", pq.Dequeue().Name);
+            Assert.Equal("Goblin", pq.Dequeue().Name);
+            Assert.Equal("Slime", pq.Dequeue().Name);
         }
     }
 }

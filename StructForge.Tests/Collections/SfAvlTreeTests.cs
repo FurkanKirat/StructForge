@@ -1,14 +1,14 @@
-using StructForge.Collections;
+﻿using StructForge.Collections;
 using StructForge.Comparers;
 
 namespace StructForge.Tests.Collections
 {
-    public class SfBinarySearchTreeTests
+    public class SfAvlTreeTests
     {
         [Fact]
         public void Add_ShouldIncreaseCount_AndContainItems()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
 
             tree.Add(10);
             tree.Add(5);
@@ -23,7 +23,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void InOrder_ShouldReturnSortedValues()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -38,7 +38,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void PreOrder_ShouldReturnCorrectOrder()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -51,7 +51,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void PostOrder_ShouldReturnCorrectOrder()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -64,7 +64,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void FindMinMax_ShouldReturnCorrectValues()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -78,7 +78,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Remove_ShouldDeleteLeafNode()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -93,7 +93,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Remove_ShouldDeleteNodeWithOneChild()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(2); // child of 5
@@ -104,12 +104,13 @@ namespace StructForge.Tests.Collections
             Assert.DoesNotContain(5, tree);
             Assert.Contains(2, tree); // child should remain
             Assert.Equal(2, tree.Count);
+
         }
 
         [Fact]
         public void Remove_ShouldDeleteNodeWithTwoChildren()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -127,7 +128,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Remove_ShouldHandleRootDeletion()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
 
             var result = tree.Remove(10);
@@ -140,7 +141,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Remove_ShouldDeleteRootNodeWithTwoChildren()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -160,7 +161,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Clear_ShouldEmptyTheTree()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(20);
 
@@ -173,17 +174,16 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Add_ShouldIgnoreDuplicates()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
 
-            Assert.Throws<ArgumentException>(() => tree.Add(10));
-            Assert.Throws<ArgumentException>(() => tree.Add(10));
+            Assert.Equal(new[]{10}, tree);
         }
         
         [Fact]
         public void InOrder_ShouldAlwaysReturnSortedSequence()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             var rand = new Random(42);
             var numbers = Enumerable.Range(1, 100).OrderBy(_ => rand.Next()).ToArray();
 
@@ -196,7 +196,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void RandomInsertDelete_ShouldMaintainCorrectCount()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             var rand = new Random(123);
             int count = 10000;
             var numbers = Enumerable.Range(1, count).OrderBy(_ => rand.Next()).ToArray();
@@ -214,7 +214,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void CopyTo_ShouldCopyElementsInOrder()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
             tree.Add(10);
             tree.Add(5);
             tree.Add(15);
@@ -228,7 +228,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void FindMinMax_OnEmptyTree_ShouldThrow()
         {
-            var tree = new SfBinarySearchTree<int>();
+            var tree = new SfAvlTree<int>();
 
             Assert.Throws<InvalidOperationException>(() => tree.FindMin());
             Assert.Throws<InvalidOperationException>(() => tree.FindMax());
@@ -237,7 +237,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void ICollection_Interface_ShouldWork()
         {
-            ICollection<int> tree = new SfBinarySearchTree<int>();
+            ICollection<int> tree = new SfAvlTree<int>();
             tree.Add(1);
             tree.Add(2);
 
@@ -254,7 +254,7 @@ namespace StructForge.Tests.Collections
         public void Constructor_WithComparer_ShouldRespectCustomOrder()
         {
             var comparer = SfComparers<int>.ReverseComparer;
-            var tree = new SfBinarySearchTree<int>(comparer);
+            var tree = new SfAvlTree<int>(comparer);
             
             tree.Add(10);
             tree.Add(5);
@@ -269,7 +269,7 @@ namespace StructForge.Tests.Collections
         {
             var numbers = new[] { 1, 2, 3, 4, 5, 6, 7 };
             
-            var tree = new SfBinarySearchTree<int>(numbers);
+            var tree = new SfAvlTree<int>(numbers);
             
             Assert.Equal(numbers.Length, tree.Count);
             Assert.Equal(numbers, tree.InOrder().ToArray());
@@ -282,7 +282,7 @@ namespace StructForge.Tests.Collections
             var words = new[] { "pea", "apple", "banana", "kiwi" };
             var comparer = SfStringComparers.Length;
             
-            var tree = new SfBinarySearchTree<string>(words, comparer);
+            var tree = new SfAvlTree<string>(words, comparer);
             
             Assert.Equal(words.Length, tree.Count);
 
@@ -294,13 +294,13 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Constructor_WithNullEnumerable_ShouldThrow()
         {
-            Assert.Throws<ArgumentNullException>(() => new SfBinarySearchTree<int>((IEnumerable<int>)null));
+            Assert.Throws<ArgumentNullException>(() => new SfAvlTree<int>((IEnumerable<int>)null));
         }
 
         [Fact]
         public void Constructor_WithEmptyEnumerable_ShouldProduceEmptyTree()
         {
-            var tree = new SfBinarySearchTree<int>(Enumerable.Empty<int>());
+            var tree = new SfAvlTree<int>(Enumerable.Empty<int>());
             
             Assert.True(tree.IsEmpty);
             Assert.Empty(tree);

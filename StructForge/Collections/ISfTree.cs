@@ -6,7 +6,7 @@ namespace StructForge.Collections
     /// <summary>
     /// Represents a tree data structure with traversal capabilities.
     /// </summary>
-    public interface ITree<T> : IDataStructure<T>
+    public interface ISfTree<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Gets the height of the tree.
@@ -48,6 +48,8 @@ namespace StructForge.Collections
         /// Traverses the tree post-order.
         /// </summary>
         IEnumerable<T> PostOrder();
+        
+        bool TryGetValue(T equalValue, out T actualValue);
     }
 
 }

@@ -6,7 +6,7 @@ namespace StructForge.Collections
     /// Represents a last-in-first-out (LIFO) collection of objects.
     /// </summary>
     /// <typeparam name="T">The type of elements in the stack.</typeparam>
-    public interface IStack<T> : IDataStructure<T>
+    public interface ISfStack<T> : ISfDataStructure<T>
     {
         /// <summary>
         /// Inserts an item at the top of the stack.
