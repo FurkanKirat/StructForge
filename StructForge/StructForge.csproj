@@ -4,7 +4,7 @@
 		<LangVersion>9</LangVersion>
 		<Nullable>disable</Nullable>
 		<PackageId>StructForge</PackageId>
-		<Version>1.1.0</Version>
+		<Version>1.1.1</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		<Description>A light-weight data structure library for learning and production use.</Description>
