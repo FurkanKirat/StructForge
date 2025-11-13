@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -177,7 +178,7 @@ namespace StructForge.Collections
         }
 
         /// <summary>Checks if the queue contains the specified item using the default comparer.</summary>
-        public bool Contains(T item) => Contains(item, EqualityComparer<T>.Default);
+        public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
         /// <summary>Checks if the queue contains the specified item using a custom comparer.</summary>
         public bool Contains(T item, IEqualityComparer<T> comparer)

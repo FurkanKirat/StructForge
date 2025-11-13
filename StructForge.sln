@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructForge", "StructForge\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructForge.Tests", "StructForge.Tests\StructForge.Tests.csproj", "{29CE2681-94B9-415C-8738-A556DA97E335}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StructForge.Benchmarks", "StructForge.Benchmarks\StructForge.Benchmarks.csproj", "{5EDFFF93-EA39-4CCC-9DBE-980C2B4A89A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +21,9 @@ Global
 		{29CE2681-94B9-415C-8738-A556DA97E335}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29CE2681-94B9-415C-8738-A556DA97E335}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29CE2681-94B9-415C-8738-A556DA97E335}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EDFFF93-EA39-4CCC-9DBE-980C2B4A89A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EDFFF93-EA39-4CCC-9DBE-980C2B4A89A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EDFFF93-EA39-4CCC-9DBE-980C2B4A89A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EDFFF93-EA39-4CCC-9DBE-980C2B4A89A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,16 +1,18 @@
 ﻿using System.Collections.Generic;
 using StructForge.Collections;
+using StructForge.Comparers;
 
 namespace StructForge.Sorting
 {
     public static class SfSorting
     {
         #region QuickSort
-        public static void QuickSort<T>(IList<T> sequence, IComparer<T> comparer)
+        public static void QuickSort<T>(IList<T> sequence, IComparer<T> comparer = null)
         {
             if (sequence.Count <= 1)
                 return;
             
+            comparer ??= SfComparers<T>.DefaultComparer;
             QuickSort(sequence, comparer, 0, sequence.Count - 1);
         }
 
@@ -57,11 +59,12 @@ namespace StructForge.Sorting
         /// TreeSort uses a simple BST and does not support duplicate values.
         /// Not safe to use with sequences containing duplicates.
         /// </summary>
-        public static void TreeSort<T>(IList<T> sequence, IComparer<T> comparer)
+        public static void TreeSort<T>(IList<T> sequence, IComparer<T> comparer = null)
         {
             if (sequence.Count <= 1)
                 return;
             
+            comparer ??= SfComparers<T>.DefaultComparer;
             SfAvlTree<T> tree = new SfAvlTree<T>(sequence, comparer);
             int i = 0;
             foreach (T item in tree)
@@ -73,11 +76,12 @@ namespace StructForge.Sorting
         #endregion
 
         #region HeapSort
-        public static void HeapSort<T>(IList<T> sequence, IComparer<T> comparer)
+        public static void HeapSort<T>(IList<T> sequence, IComparer<T> comparer = null)
         {
             if (sequence.Count <= 1)
                 return;
             
+            comparer ??= SfComparers<T>.DefaultComparer;
             SfMaxHeap<T> maxHeap = new SfMaxHeap<T>(sequence, comparer);
 
             while (maxHeap.Count > 0)

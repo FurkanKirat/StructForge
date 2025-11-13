@@ -7,7 +7,7 @@ namespace StructForge.Comparers
     {
         public static IComparer<T> Reverse<T>(this IComparer<T> comparer)
         {
-            comparer ??= Comparer<T>.Default;
+            comparer ??= SfComparers<T>.DefaultComparer;
             return Comparer<T>.Create((a, b) => comparer.Compare(b, a));
         }
 

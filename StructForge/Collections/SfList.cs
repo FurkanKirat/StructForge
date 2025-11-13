@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Sorting;
 
@@ -122,6 +123,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Adds an item to the end of the list.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {
             ReGrowthIfNeeded();
@@ -131,45 +133,52 @@ namespace StructForge.Collections
         /// <summary>
         /// Adds all elements from the given collection to the end of the list.
         /// </summary>
-        /// <param name="collection">Collection to add</param>
-        public void AddRange(IEnumerable<T> collection)
+        /// <param name="enumerable">Collection to add</param>
+        public void AddRange(IEnumerable<T> enumerable)
         {
-            if (collection == null) throw new ArgumentNullException(nameof(collection));
-            T[] collectionArray = collection.ToArray();
-            int addCount = collectionArray.Length;
+            if (enumerable == null) throw new ArgumentNullException(nameof(enumerable));
 
-            if (Count + addCount > Capacity)
+            if (enumerable is ICollection<T> collection)
             {
-                int newCapacity = (int)((Count + addCount) * _growthFactor);
-                ReGrow(newCapacity);
+                int addCount = collection.Count;
+                ReGrow(Count + addCount);
+                collection.CopyTo(_array, Count);
+                Count += addCount;
             }
-
-            for (int i = 0; i < addCount; i++)
+            else
             {
-                _array[Count + i] = collectionArray[i];
+                foreach (var item in enumerable)
+                    Add(item);
             }
-            Count += addCount;
+            
         }
 
 
         /// <summary>
         /// Clears the list. Resets the underlying array elements to default.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
-            for (int i = 0; i < Count; i++) 
-                _array[i] = default;
-
+            Array.Clear(_array, 0, Count);
             Count = 0;
         }
 
         /// <summary>
         /// Checks whether the list contains a given item.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => _array.Contains(item);
 
-        public bool Contains(T item, IEqualityComparer<T> comparer) 
-            => _array.Contains(item, comparer);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Contains(T item, IEqualityComparer<T> comparer)
+        {
+            comparer ??= SfEqualityComparers<T>.Default;
+            for (int i = 0; i < Count; i++)
+                if (comparer.Equals(_array[i], item))
+                    return true;
+            return false;
+        } 
 
         /// <summary>
         /// Copies the elements of the list to a destination array starting at specified index.
@@ -209,6 +218,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Returns the index of the first occurrence of an item, or -1 if not found.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
             for (int i = 0; i < Count; i++)
@@ -245,7 +255,7 @@ namespace StructForge.Collections
 
             // Shift elements left
             for (int i = index; i < Count - 1; i++)
-                _array[i] = _array[i + 1];
+                Array.Copy(_array, i + 1, _array, i, Count - i - 1);
 
             _array[Count - 1] = default;
             Count--;
@@ -254,6 +264,8 @@ namespace StructForge.Collections
         public void Sort() => Sort(SfComparers<T>.DefaultComparer);
 
         public void Sort(IComparer<T> comparer) => SfSorting.QuickSort(this, comparer);
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Swap(int i, int j)
         {
             if (i < 0 || i >= Count)
@@ -348,6 +360,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Expands the underlying array if the current capacity is reached.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReGrowthIfNeeded()
         {
             if (Capacity == Count)
@@ -360,11 +373,12 @@ namespace StructForge.Collections
         /// <summary>
         /// Expands the underlying array to given capacity
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReGrow(int newCapacity)
         {
             newCapacity = Math.Max(newCapacity, Count + 1);
             T[] newArray = new T[newCapacity];
-            Array.Copy(_array, newArray, _array.Length);
+            Array.Copy(_array, newArray, Count);
             _array = newArray;
         }
     }

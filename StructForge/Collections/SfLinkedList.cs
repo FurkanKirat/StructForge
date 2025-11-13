@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -95,7 +96,7 @@ namespace StructForge.Collections
         }
 
         /// <summary>Checks if the list contains a specific item using the default comparer.</summary>
-        public bool Contains(T item) => Contains(item, EqualityComparer<T>.Default);
+        public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
         /// <summary>Checks if the list contains a specific item using a custom comparer.</summary>
         public bool Contains(T item, IEqualityComparer<T> comparer)
@@ -247,7 +248,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current != null)
             {
-                if (EqualityComparer<T>.Default.Equals(current.Value, item))
+                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
                 {
                     RemoveNode(current);
                     return true;
@@ -280,7 +281,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current != null)
             {
-                if (EqualityComparer<T>.Default.Equals(current.Value, item))
+                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
                     return current;
                 current = current.Next;
             }
@@ -293,7 +294,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _tail;
             while (current != null)
             {
-                if (EqualityComparer<T>.Default.Equals(current.Value, item))
+                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
                     return current;
                 current = current.Prev;
             }

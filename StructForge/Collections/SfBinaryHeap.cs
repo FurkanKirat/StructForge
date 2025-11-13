@@ -33,7 +33,7 @@ namespace StructForge.Collections
                             IComparer<T> comparer = null)
         {
             _data = new SfList<T>(capacity, growthFactor);
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
         }
 
         /// <summary>
@@ -42,7 +42,7 @@ namespace StructForge.Collections
         public SfBinaryHeap(IEnumerable<T> items, IComparer<T> comparer = null)
         {
             ArgumentNullException.ThrowIfNull(items);
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             _data = new SfList<T>();
             foreach (var item in items)
                 _data.Add(item);
@@ -148,7 +148,7 @@ namespace StructForge.Collections
         }
 
         /// <summary>Returns true if the heap contains the specified item (using default comparer).</summary>
-        public bool Contains(T item) => Contains(item, EqualityComparer<T>.Default);
+        public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
         /// <summary>Returns true if the heap contains the specified item using a custom comparer.</summary>
         public bool Contains(T item, IEqualityComparer<T> comparer)

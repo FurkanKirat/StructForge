@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -73,7 +74,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Determines whether the stack contains a specific element using default equality.
         /// </summary>
-        public bool Contains(T item) => Contains(item, EqualityComparer<T>.Default);
+        public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
         /// <summary>
         /// Executes the specified action on each element from top to bottom.

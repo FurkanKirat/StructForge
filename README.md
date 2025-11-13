@@ -88,25 +88,26 @@ git clone https://github.com/FurkanKirat/StructForge.git
 ### Sorted Dictionary
 
 ```csharp
-var dict = new SfSortedDictionary<string, int>();
-dict.Add("apple", 3);
-dict.Add("banana", 1);
-dict.Add("cherry", 2);
+var dict = new SfSortedDictionary<int, string>();
+dict.Add(3, "apple");
+dict.Add(1, "banana");
+dict.Add(2, "cherry");
 
 foreach (var kv in dict)
 Console.WriteLine($"{kv.Key}: {kv.Value}");
 // Output:
-// banana: 1
-// cherry: 2
-// apple: 3
+// 1: banana
+// 2: cherry
+// 3: apple
 ```
 
 ### Shuffle and Binary Search
 
 ```csharp
 int[] data = { 1, 2, 3, 4, 5, 6 };
-SfShuffleExtensions.Shuffle(data);
 int index = SfSearching.BinarySearch(data, 4);
+Console.WriteLine(index);
+// Output: 3
 
 ```
 ### AVL Tree
@@ -118,7 +119,8 @@ avl.Add(5);
 avl.Add(15);
 avl.Add(7);
 
-Console.WriteLine($"Min: {avl.Min}, Max: {avl.Max}, Count: {avl.Count}");
+Console.WriteLine($"Min: {avl.FindMin()}, Max: {avl.FindMax()}, Count: {avl.Count}");
+// Output: Min: 5, Max: 15, Count: 4
 ```
 
 ### Linked List
@@ -149,7 +151,7 @@ foreach (var item in pq.EnumerateByPriority())
 
 ```csharp
 int[] arr = { 5, 2, 9, 1, 5, 6 };
-SfSorting.Quicksort(arr);
+SfSorting.QuickSort(arr);
 Console.WriteLine(string.Join(", ", arr)); // 1, 2, 5, 5, 6, 9
 ```
 
@@ -158,13 +160,6 @@ Console.WriteLine(string.Join(", ", arr)); // 1, 2, 5, 5, 6, 9
 ## Contribution
 
 Contributions are welcome! Feel free to open issues, add features, or improve existing code. Keep in mind that this library is primarily **educational**.
-
-## 📦 Installation
-
-You can install the latest version via **NuGet**:
-
-```bash
-dotnet add package StructForge
 
 ---
 

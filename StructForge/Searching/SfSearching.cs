@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using StructForge.Comparers;
 
 namespace StructForge.Searching
 {
@@ -8,7 +9,7 @@ namespace StructForge.Searching
         public static int BinarySearch<T>(this IList<T> list, T item, IComparer<T> comparer = null)
         {
             ArgumentNullException.ThrowIfNull(list);
-            comparer ??= Comparer<T>.Default;
+            comparer ??= SfComparers<T>.DefaultComparer;
             
             int left = 0;
             int right = list.Count - 1;

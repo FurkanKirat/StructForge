@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 
 namespace StructForge.Collections
@@ -56,7 +57,7 @@ namespace StructForge.Collections
                 return;
             
             foreach (var item in arr)
-                Add(item);
+                TryAdd(item);
         }
 
         /// <summary>
@@ -72,6 +73,7 @@ namespace StructForge.Collections
         /// </summary>
         /// <param name="item">The element to locate.</param>
         /// <returns><c>true</c> if the item is found; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
             SfAvlTreeNode<T> current = _root;
@@ -102,25 +104,31 @@ namespace StructForge.Collections
                 return null;
 
             int cmp = _comparer.Compare(item, node.Value);
-            if (cmp < 0)
-                node.Left = Delete(node.Left, item);
-            else if (cmp > 0)
-                node.Right = Delete(node.Right, item);
-            else
+            switch (cmp)
             {
-                if (decrementCount) 
-                    Count--;
+                case < 0:
+                    node.Left = Delete(node.Left, item);
+                    break;
+                case > 0:
+                    node.Right = Delete(node.Right, item);
+                    break;
+                default:
+                {
+                    if (decrementCount) 
+                        Count--;
 
-                // Node with one or zero children
-                if (node.Left == null)
-                    return node.Right;
-                if (node.Right == null)
-                    return node.Left;
+                    // Node with one or zero children
+                    if (node.Left == null)
+                        return node.Right;
+                    if (node.Right == null)
+                        return node.Left;
 
-                // Node with two children → replace with in-order successor
-                SfAvlTreeNode<T> successor = FindLeftmost(node.Right);
-                node.Value = successor.Value;
-                node.Right = Delete(node.Right, successor.Value, false);
+                    // Node with two children → replace with in-order successor
+                    SfAvlTreeNode<T> successor = FindLeftmost(node.Right);
+                    node.Value = successor.Value;
+                    node.Right = Delete(node.Right, successor.Value, false);
+                    break;
+                }
             }
 
             node.Height = 1 + Math.Max(GetHeight(node.Left), GetHeight(node.Right));
@@ -226,7 +234,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Balances the AVL tree at the given node by performing appropriate rotations.
         /// </summary>
-        private SfAvlTreeNode<T> Rebalance(SfAvlTreeNode<T> node)
+        private static SfAvlTreeNode<T> Rebalance(SfAvlTreeNode<T> node)
         {
             int balance = GetBalance(node);
 
@@ -247,7 +255,8 @@ namespace StructForge.Collections
             }
         }
 
-        private SfAvlTreeNode<T> RightRotate(SfAvlTreeNode<T> pivot)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static SfAvlTreeNode<T> RightRotate(SfAvlTreeNode<T> pivot)
         {
             var newRoot = pivot.Left;
             var transferSubtree = newRoot.Right;
@@ -261,7 +270,8 @@ namespace StructForge.Collections
             return newRoot;
         }
 
-        private SfAvlTreeNode<T> LeftRotate(SfAvlTreeNode<T> pivot)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static SfAvlTreeNode<T> LeftRotate(SfAvlTreeNode<T> pivot)
         {
             var newRoot = pivot.Right;
             var transferSubtree = newRoot.Left;
@@ -393,7 +403,10 @@ namespace StructForge.Collections
                 action(item);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetHeight(SfAvlTreeNode<T> node) => node?.Height ?? 0;
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static int GetBalance(SfAvlTreeNode<T> node) => GetHeight(node.Left) - GetHeight(node.Right);
 
         private static SfAvlTreeNode<T> FindLeftmost(SfAvlTreeNode<T> node)
@@ -417,7 +430,7 @@ namespace StructForge.Collections
     /// Represents a single node in the <see cref="SfAvlTree{T}"/>.
     /// </summary>
     [DebuggerDisplay("{Value} H={Height}")]
-    public class SfAvlTreeNode<T>
+    public sealed class SfAvlTreeNode<T>
     {
         internal T Value;
         internal SfAvlTreeNode<T> Left;

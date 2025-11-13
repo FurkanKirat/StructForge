@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using StructForge.Comparers;
 using StructForge.Extensions;
 
 namespace StructForge.Collections
@@ -55,7 +56,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfSortedSet(IComparer<T> comparer = null)
         {
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             _tree = new SfAvlTree<T>(_comparer);
         }
 
@@ -65,7 +66,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfSortedSet(IEnumerable<T> collection, IComparer<T> comparer = null)
         {
-            _comparer = comparer ?? Comparer<T>.Default;
+            _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             _tree = new SfAvlTree<T>(collection, _comparer);
         }
 
@@ -152,7 +153,7 @@ namespace StructForge.Collections
         {
             ArgumentNullException.ThrowIfNull(other);
 
-            var otherSet = new HashSet<T>(other, EqualityComparer<T>.Default);
+            var otherSet = new HashSet<T>(other, SfEqualityComparers<T>.Default);
             var toRemove = new List<T>();
 
             foreach (var item in _tree)
