@@ -1,0 +1,43 @@
+name: Publish to NuGet
+
+# This flow ONLY works when you publish a new "Release".
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    #1. Check Code
+    - uses: actions/checkout@v3
+
+    # 2. Set Up the .NET Environment
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    #3. Load the Dependencies
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # 4. Build the Project (in Release Mode)
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    # 5. Run the Tests (Very Important! If the tests fail, do not publish)
+
+    - name: Test
+    run: dotnet test --configuration Release --no-build
+
+    # 6. Create Package (.nupkg)
+    # Automatically retrieves the version number from the .csproj file
+    - name: Pack
+      run: dotnet pack --configuration Release --no-build --output ./nupkgs
+
+    # 7. Submit to NuGet
+    - name: Push to NuGet
+      run: dotnet nuget push ./nupkgs/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

@@ -17,6 +17,7 @@
 - Added SfRingBuffer (Zero-allocation circular queue).
 - Exposed GetRawData() for serialization support.
 		</PackageReleaseNotes>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	
 	<ItemGroup>
