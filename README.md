@@ -16,7 +16,7 @@
 * **Heaps & Priority Queues**: `SfBinaryHeap<T>`, `SfMaxHeap<T>`, `SfMinHeap<T>`, `SfPriorityQueue<TItem, TPriority>`
 * **Binary Search Trees**: `SfBinarySearchTree<T>`
 * **Trees**: `SfBinarySearchTree<T>, SfAvlTree<T>`
-* **Sets & Dictionaries**: `SfSortedSet<T>, SfSortedDictionary<TKey, TValue>`
+* **Sets & Dictionaries**: `SfHashSet<T>, SfDictionary<TKey, TValue>, SfSortedSet<T>, SfSortedDictionary<TKey, TValue>`
 
 ### Sorting Algorithms
 
@@ -62,6 +62,7 @@ SfComparerUtils – helper utilities for key/value and custom comparers
 
 * **High-Performance Grids**: `SfGrid2D<T>`, `SfGrid3D<T>` (Flattened array implementation for CPU cache locality)
 * **Bit Manipulation**: `SfBitArray` (Stores booleans as bits, reducing memory usage by 8x)
+* **Hashing**: `SfHashSet<T>`, `SfDictionary<TKey, TValue>` (O(1) lookup and insert operations)
 * **Buffers**: `SfRingBuffer<T>` (Fixed-size circular queue for zero-allocation data streaming)
 
 ### Key Capabilities
