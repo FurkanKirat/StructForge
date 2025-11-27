@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using StructForge.Comparers;
 
 namespace StructForge.Collections
 {
@@ -15,10 +16,10 @@ namespace StructForge.Collections
         private readonly SfBinaryHeap<(TItem item, TPriority priority)> _heap;
         private readonly bool _isMinHeap;
 
-        /// <summary>Number of items in the queue.</summary>
+        /// <inheritdoc/>
         public int Count => _heap.Count;
 
-        /// <summary>Returns true if the queue has no elements.</summary>
+        /// <inheritdoc/>
         public bool IsEmpty => _heap.IsEmpty;
 
         /// <summary>
@@ -53,13 +54,13 @@ namespace StructForge.Collections
         /// <summary>Returns the item with the highest/lowest priority without removing it.</summary>
         public TItem Peek() => _heap.Peek().item;
 
-        /// <summary>Enumerates all items in arbitrary order.</summary>
+        /// <inheritdoc/>
         public IEnumerator<TItem> GetEnumerator()
         {
             foreach (var (item, _) in _heap)
                 yield return item;
         }
-
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <summary>Enumerates items in priority order without modifying the queue.</summary>
@@ -74,20 +75,20 @@ namespace StructForge.Collections
                 yield return copy.Pop().item;
         }
 
-        /// <summary>Executes an action for each item in the queue.</summary>
+        /// <inheritdoc/>
         public void ForEach(Action<TItem> action)
         {
             foreach (var (item, _) in _heap)
                 action(item);
         }
 
-        /// <summary>Returns true if the queue contains the item using the default comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(TItem item) => Contains(item, EqualityComparer<TItem>.Default);
 
-        /// <summary>Returns true if the queue contains the item using a custom comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(TItem item, IEqualityComparer<TItem> comparer)
         {
-            if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+            comparer ??= SfEqualityComparers<TItem>.Default;
 
             foreach (var (heapItem, _) in _heap)
             {
@@ -97,10 +98,10 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>Clears all items from the queue.</summary>
+        /// <inheritdoc/>
         public void Clear() => _heap.Clear();
 
-        /// <summary>Copies the items to an array starting at the specified index.</summary>
+        /// <inheritdoc/>
         public void CopyTo(TItem[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));

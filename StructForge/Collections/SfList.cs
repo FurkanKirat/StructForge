@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Helpers;
 using StructForge.Sorting;
 
 namespace StructForge.Collections
@@ -23,10 +24,8 @@ namespace StructForge.Collections
 
         // Default growth factor when array needs expansion
         internal const float DefaultGrowthFactor = 2;
-        
-        /// <summary>
-        /// Gets the number of elements currently stored.
-        /// </summary>
+
+        /// <inheritdoc cref="ICollection{T}.Count" />
         public int Count { get; private set; }
 
         /// <summary>
@@ -34,14 +33,10 @@ namespace StructForge.Collections
         /// </summary>
         public int Capacity => _array.Length;
 
-        /// <summary>
-        /// Returns true if the list is read-only. Always false in this implementation.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsReadOnly => false;
 
-        /// <summary>
-        /// Returns true if the list contains no elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         #region Constructors
@@ -63,7 +58,7 @@ namespace StructForge.Collections
         /// <param name="growthFactor">growth factor of the list</param>
         public SfList(IEnumerable<T> items, int extraCapacity = 0, float growthFactor = DefaultGrowthFactor)
         {
-            ArgumentNullException.ThrowIfNull(items);
+            SfThrowHelper.ThrowIfNull(items);
             
             if (items is ICollection<T> collection)
             {
@@ -97,20 +92,16 @@ namespace StructForge.Collections
 
         #region Enumeration
 
-        /// <summary>
-        /// Returns an enumerator that iterates over the list.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < Count; i++)
                 yield return _array[i];
         }
-
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
-        /// <summary>
-        /// Executes the specified action on each element of the list.
-        /// </summary>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             for (int i = 0; i < Count; i++)
@@ -120,9 +111,7 @@ namespace StructForge.Collections
         #endregion
         #region Core Methods
 
-        /// <summary>
-        /// Adds an item to the end of the list.
-        /// </summary>
+        /// <inheritdoc cref="ISfList{T}.Add" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {
@@ -154,9 +143,7 @@ namespace StructForge.Collections
         }
 
 
-        /// <summary>
-        /// Clears the list. Resets the underlying array elements to default.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.Clear" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
         {
@@ -164,12 +151,11 @@ namespace StructForge.Collections
             Count = 0;
         }
 
-        /// <summary>
-        /// Checks whether the list contains a given item.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.Contains(T)" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => _array.Contains(item);
 
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
@@ -178,11 +164,9 @@ namespace StructForge.Collections
                 if (comparer.Equals(_array[i], item))
                     return true;
             return false;
-        } 
+        }
 
-        /// <summary>
-        /// Copies the elements of the list to a destination array starting at specified index.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -192,9 +176,7 @@ namespace StructForge.Collections
             Array.Copy(_array, 0, array, arrayIndex, Count);
         }
 
-        /// <summary>
-        /// Removes the first occurrence of an item. Returns true if removed, false if not found.
-        /// </summary>
+        /// <inheritdoc cref="ISfList{T}.Remove" />
         public bool Remove(T item)
         {
             for (int i = 0; i < Count; i++)
@@ -213,11 +195,8 @@ namespace StructForge.Collections
             return false;
         }
 
-        
 
-        /// <summary>
-        /// Returns the index of the first occurrence of an item, or -1 if not found.
-        /// </summary>
+        /// <inheritdoc cref="IList{T}.IndexOf" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int IndexOf(T item)
         {
@@ -228,9 +207,7 @@ namespace StructForge.Collections
             return -1;
         }
 
-        /// <summary>
-        /// Inserts an item at the specified index.
-        /// </summary>
+        /// <inheritdoc cref="ISfList{T}.Insert" />
         public void Insert(int index, T item)
         {
             if (index < 0 || index > Count) throw new ArgumentOutOfRangeException(nameof(index));
@@ -244,10 +221,8 @@ namespace StructForge.Collections
             _array[index] = item;
             Count++;
         }
-        
-        /// <summary>
-        /// Removes the element at the specified index.
-        /// </summary>
+
+        /// <inheritdoc cref="ISfList{T}.RemoveAt" />
         public void RemoveAt(int index)
         {
             if (index < 0 || index >= Count) 
@@ -261,10 +236,13 @@ namespace StructForge.Collections
             Count--;
         }
 
+        /// <inheritdoc/>
         public void Sort() => Sort(SfComparers<T>.DefaultComparer);
-
+        
+        /// <inheritdoc/>
         public void Sort(IComparer<T> comparer) => SfSorting.QuickSort(this, comparer);
         
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Swap(int i, int j)
         {
@@ -277,9 +255,7 @@ namespace StructForge.Collections
             (_array[i], _array[j]) = (_array[j], _array[i]);
         }
 
-        /// <summary>
-        /// Indexer for accessing elements by position.
-        /// </summary>
+        /// <inheritdoc cref="ISfList{T}.this" />
         public T this[int index]
         {
             get
@@ -294,12 +270,14 @@ namespace StructForge.Collections
             }
         }
 
+        /// <inheritdoc/>
         public T First
         {
             get => this[0];
             set => this[0] = value;
         }
 
+        /// <inheritdoc/>
         public T Last
         {
             get => this[Count - 1];

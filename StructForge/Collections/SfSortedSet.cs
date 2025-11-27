@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using StructForge.Comparers;
 using StructForge.Extensions;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -26,19 +27,13 @@ namespace StructForge.Collections
         /// </summary>
         private readonly IComparer<T> _comparer;
 
-        /// <summary>
-        /// Gets the number of elements in the set.
-        /// </summary>
+        /// <inheritdoc cref="ICollection{T}.Count" />
         public int Count => _tree.Count;
 
-        /// <summary>
-        /// Always false — this collection is mutable.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsReadOnly => false;
 
-        /// <summary>
-        /// Indicates whether the set contains no elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         /// <summary>
@@ -70,88 +65,59 @@ namespace StructForge.Collections
             _tree = new SfAvlTree<T>(collection, _comparer);
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the set.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator() => _tree.GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Adds the specified item to the set.
-        /// Throws an exception if the item already exists.
-        /// </summary>
+        /// <inheritdoc/>
         public void Add(T item)
         {
             if (!TryAdd(item))
                 throw new InvalidOperationException("Duplicate item");
         }
 
-        /// <summary>
-        /// Attempts to add the specified item.
-        /// Returns true if added successfully, false if duplicate.
-        /// </summary>
+        /// <inheritdoc/>
         public bool TryAdd(T item) => _tree.TryAdd(item);
 
-        /// <summary>
-        /// Removes the specified item from the set.
-        /// Returns true if the item was found and removed.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Remove(T item) => _tree.Remove(item);
 
-        /// <summary>
-        /// Removes all elements from the set.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.Clear" />
         public void Clear() => _tree.Clear();
 
-        /// <summary>
-        /// Checks whether the set contains the specified item.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.Contains(T)" />
         public bool Contains(T item) => _tree.Contains(item);
 
-        /// <summary>
-        /// Checks whether the set contains the specified item
-        /// using a custom equality comparer.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer) => _tree.Contains(item, comparer);
 
-        /// <summary>
-        /// Copies the elements of the set to the specified array starting at the given index.
-        /// </summary>
+        /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
         public void CopyTo(T[] array, int arrayIndex) => _tree.CopyTo(array, arrayIndex);
 
-        /// <summary>
-        /// Applies the given action to each element in the set.
-        /// </summary>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action) => _tree.ForEach(action);
 
-        /// <summary>
-        /// Attempts to find an existing element equal to the given value.
-        /// Returns true and outputs the actual value if found.
-        /// </summary>
+        /// <inheritdoc/>
         public bool TryGetValue(T equalValue, out T actualValue) => _tree.TryGetValue(equalValue, out actualValue);
 
         // -------------------------------------------------------------------
         //  SET OPERATIONS
         // -------------------------------------------------------------------
 
-        /// <summary>
-        /// Adds all elements from the specified collection to the set.
-        /// Duplicates are ignored.
-        /// </summary>
+        /// <inheritdoc/>
         public void UnionWith(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             foreach (var item in other)
                 _tree.TryAdd(item);
         }
 
-        /// <summary>
-        /// Modifies the current set to contain only elements that are also in the specified collection.
-        /// </summary>
+        /// <inheritdoc/>
         public void IntersectWith(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
 
             var otherSet = new HashSet<T>(other, SfEqualityComparers<T>.Default);
             var toRemove = new List<T>();
@@ -166,23 +132,18 @@ namespace StructForge.Collections
                 _tree.Remove(item);
         }
 
-        /// <summary>
-        /// Removes all elements that are also contained in the specified collection.
-        /// </summary>
+        /// <inheritdoc/>
         public void ExceptWith(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             foreach (var item in other)
                 _tree.Remove(item);
         }
 
-        /// <summary>
-        /// Modifies the current set to contain elements that are present
-        /// in either the current set or the specified collection, but not both.
-        /// </summary>
+        /// <inheritdoc/>
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             foreach (var item in other)
             {
                 if (!_tree.Remove(item))
@@ -190,12 +151,10 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>
-        /// Determines whether the current set is a subset of the specified collection.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             var otherSet = new HashSet<T>(other);
             foreach (var item in _tree)
             {
@@ -205,12 +164,10 @@ namespace StructForge.Collections
             return true;
         }
 
-        /// <summary>
-        /// Determines whether the current set is a superset of the specified collection.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             foreach (var item in other)
             {
                 if (!_tree.Contains(item))
@@ -219,12 +176,10 @@ namespace StructForge.Collections
             return true;
         }
 
-        /// <summary>
-        /// Determines whether the current set and the specified collection share any common elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Overlaps(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             foreach (var item in other)
             {
                 if (_tree.Contains(item))
@@ -233,12 +188,10 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>
-        /// Determines whether the current set and the specified collection contain the same elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool SetEquals(IEnumerable<T> other)
         {
-            ArgumentNullException.ThrowIfNull(other);
+            SfThrowHelper.ThrowIfNull(other);
             var otherArr = other.OrderBy(x => x, _comparer).ToArray();
             if (otherArr.Length != Count)
                 return false;

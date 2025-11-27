@@ -9,31 +9,26 @@ public static class SfProgram
 {
     public static void Main(string[] args)
     {
-        // Quick mod: hızlı test için (geliştirme sırasında)
         var quickConfig = DefaultConfig.Instance
             .AddJob(Job.Default
-                .WithWarmupCount(1)        // sadece 1 ısınma turu
-                .WithIterationCount(5)      // 5 ölçüm turu
-                .WithInvocationCount(16)     // her turda 1 çağrı
+                .WithWarmupCount(1) 
+                .WithIterationCount(5)
+                .WithInvocationCount(16)
                 .WithId("Quick"))
             .WithOptions(ConfigOptions.DisableOptimizationsValidator);
 
-        // Full mod: yayın öncesi, daha doğru sonuçlar için
         var fullConfig = DefaultConfig.Instance
             .AddJob(Job.Default
-                .WithWarmupCount(5)         // daha fazla ısınma
-                .WithIterationCount(15)     // daha fazla tekrar
+                .WithWarmupCount(5)
+                .WithIterationCount(15)
                 .WithId("Full"))
             .WithOptions(ConfigOptions.DisableOptimizationsValidator);
 
-        // ✅ hangi mod çalışacak
-        bool quickMode = true; // false yaparsan Full mode çalışır
+        bool quickMode = true;
 
         var config = quickMode ? quickConfig : fullConfig;
-
-        // Benchmarks'ı burada seçiyorsun:
-        BenchmarkRunner.Run<SfSortedSetBenchmarks>(config);
-        // BenchmarkRunner.Run<SfListBenchmarks>(config);
-        // BenchmarkRunner.Run<SfAvlTreeBenchmarks>(config);
+        
+        BenchmarkRunner.Run<SfDictionaryBenchmarks>(config);
+        
     }
 }

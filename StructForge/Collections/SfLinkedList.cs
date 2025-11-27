@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using StructForge.Comparers;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -12,10 +13,10 @@ namespace StructForge.Collections
     /// <typeparam name="T">Type of elements stored in the list.</typeparam>
     public class SfLinkedList<T> : ISfLinkedList<T>
     {
-        /// <summary>Number of elements in the list.</summary>
+        /// <inheritdoc/>
         public int Count { get; private set; }
 
-        /// <summary>Returns true if the list has no elements.</summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         private SfLinkedListNode<T> _head;
@@ -39,7 +40,7 @@ namespace StructForge.Collections
         /// <param name="enumerable">Collection of items to add to the list.</param>
         public SfLinkedList(IEnumerable<T> enumerable)
         {
-            ArgumentNullException.ThrowIfNull(enumerable);
+            SfThrowHelper.ThrowIfNull(enumerable);
             SfLinkedListNode<T> current = null;
             foreach (var item in enumerable)
             {
@@ -60,7 +61,7 @@ namespace StructForge.Collections
             _tail = current;
         }
 
-        /// <summary>Returns an enumerator that iterates through the list from head to tail.</summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             SfLinkedListNode<T> current = _head;
@@ -70,10 +71,10 @@ namespace StructForge.Collections
                 current = current.Next;
             }
         }
-
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>Executes the specified action for each element in forward order.</summary>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             SfLinkedListNode<T> current = _head;
@@ -95,10 +96,10 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>Checks if the list contains a specific item using the default comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
-        /// <summary>Checks if the list contains a specific item using a custom comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
             SfLinkedListNode<T> current = _head;
@@ -111,7 +112,7 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>Removes all elements from the list.</summary>
+        /// <inheritdoc/>
         public void Clear()
         {
             SfLinkedListNode<T> current = _head;
@@ -126,7 +127,7 @@ namespace StructForge.Collections
             Count = 0;
         }
 
-        /// <summary>Copies the elements of the list to an array starting at the specified index.</summary>
+        /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -142,7 +143,7 @@ namespace StructForge.Collections
         }
         
 
-        /// <summary>Adds an item at the beginning of the list.</summary>
+        /// <inheritdoc/>
         public void AddFirst(T item)
         {
             var newNode = new SfLinkedListNode<T>(item, this);
@@ -159,7 +160,7 @@ namespace StructForge.Collections
             Count++;
         }
 
-        /// <summary>Adds an item at the end of the list.</summary>
+        /// <inheritdoc/>
         public void AddLast(T item)
         {
             var newNode = new SfLinkedListNode<T>(item, this);
@@ -176,8 +177,7 @@ namespace StructForge.Collections
             Count++;
         }
 
-        /// <summary>Removes and returns the first element of the list.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the list is empty.</exception>
+        /// <inheritdoc/>
         public T RemoveFirst()
         {
             if (Count == 0) throw new InvalidOperationException("Collection is empty");
@@ -187,8 +187,7 @@ namespace StructForge.Collections
             return value;
         }
 
-        /// <summary>Removes and returns the last element of the list.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the list is empty.</exception>
+        /// <inheritdoc/>
         public T RemoveLast()
         {
             if (Count == 0) throw new InvalidOperationException("Collection is empty");
@@ -198,7 +197,7 @@ namespace StructForge.Collections
             return value;
         }
 
-        /// <summary>Inserts a new item after the specified node.</summary>
+        /// <inheritdoc/>
         public void InsertAfter(SfLinkedListNode<T> node, T item)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
@@ -220,7 +219,7 @@ namespace StructForge.Collections
             Count++;
         }
 
-        /// <summary>Inserts a new item before the specified node.</summary>
+        /// <inheritdoc/>
         public void InsertBefore(SfLinkedListNode<T> node, T item)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
@@ -242,13 +241,15 @@ namespace StructForge.Collections
             Count++;
         }
 
-        /// <summary>Removes the first occurrence of the specified item.</summary>
-        public bool Remove(T item)
+        /// <inheritdoc/>
+        public bool Remove(T item) => Remove(item, SfEqualityComparers<T>.Default);
+        /// <inheritdoc/>
+        public bool Remove(T item, IEqualityComparer<T> comparer)
         {
             SfLinkedListNode<T> current = _head;
             while (current != null)
             {
-                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
+                if (comparer.Equals(current.Value, item))
                 {
                     RemoveNode(current);
                     return true;
@@ -258,7 +259,7 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>Reverses the list in-place.</summary>
+        /// <inheritdoc/>
         public void Reverse()
         {
             SfLinkedListNode<T> current = _head;
@@ -275,7 +276,7 @@ namespace StructForge.Collections
             (_head, _tail) = (_tail, _head);
         }
 
-        /// <summary>Finds the first node containing the specified item.</summary>
+        /// <inheritdoc/>
         public SfLinkedListNode<T> Find(T item)
         {
             SfLinkedListNode<T> current = _head;
@@ -288,7 +289,7 @@ namespace StructForge.Collections
             return null;
         }
 
-        /// <summary>Finds the last node containing the specified item.</summary>
+        /// <inheritdoc/>
         public SfLinkedListNode<T> FindLast(T item)
         {
             SfLinkedListNode<T> current = _tail;

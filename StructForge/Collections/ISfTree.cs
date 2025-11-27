@@ -49,6 +49,13 @@ namespace StructForge.Collections
         /// </summary>
         IEnumerable<T> PostOrder();
         
+        /// <summary>
+        /// Tries to retrieve the actual stored value that is equal to the specified value
+        /// based on the set's equality or comparison logic.
+        /// </summary>
+        /// <param name="equalValue">The value to search for in the set.</param>
+        /// <param name="actualValue">The actual stored value if found; otherwise, the default value of T.</param>
+        /// <returns>True if a matching value is found; otherwise, false.</returns>
         bool TryGetValue(T equalValue, out T actualValue);
     }
 

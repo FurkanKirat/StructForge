@@ -42,9 +42,12 @@ namespace StructForge.Collections
         /// <returns>True if an item was retrieved; false if the queue was empty.</returns>
         bool TryPeek(out T item);
 
-        /// <summary>
-        /// Reduces the capacity of the queue to fit its current count, if there is excessive unused space.
-        /// </summary>
-        void TrimExcess();
+        /// <summary>Returns the last item without removing it. Throws if empty.</summary>
+        /// <exception cref="InvalidOperationException">Thrown if the queue is empty.</exception>
+        T PeekLast();
+
+        /// <summary>Attempts to return the last item without removing it. Returns false if empty.</summary>
+        bool TryPeekLast(out T item);
+
     }
 }

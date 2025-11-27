@@ -58,6 +58,12 @@ SfComparers<T> – default comparer access
 
 SfComparerUtils – helper utilities for key/value and custom comparers
 
+### Spatial & Memory Optimized (New in v1.2.0)
+
+* **High-Performance Grids**: `SfGrid2D<T>`, `SfGrid3D<T>` (Flattened array implementation for CPU cache locality)
+* **Bit Manipulation**: `SfBitArray` (Stores booleans as bits, reducing memory usage by 8x)
+* **Buffers**: `SfRingBuffer<T>` (Fixed-size circular queue for zero-allocation data streaming)
+
 ### Key Capabilities
 
 * Fully generic implementations
@@ -85,6 +91,46 @@ git clone https://github.com/FurkanKirat/StructForge.git
 
 ## Usage Examples
 
+### 2D Grid
+```csharp
+// SfGrid2D uses a single 1D array internally for better CPU cache locality
+var grid = new SfGrid2D<int>(width: 10, height: 10);
+
+// Access like a standard 2D array
+grid[5, 5] = 42;
+
+// Fast iteration (Linear memory access)
+foreach (var item in grid)
+{
+    // Process item...
+}
+```
+
+### BitArray
+```csharp
+// Stores 1024 booleans using only ~128 bytes (8x memory saving)
+var bits = new SfBitArray(1024);
+
+bits[100] = true;
+bits.Toggle(50);
+
+Console.WriteLine($"True Bits: {bits.CountTrue()}"); // Optimized population count
+```
+
+### Ring Buffer
+```csharp
+// Fixed-size buffer that overwrites old data automatically
+var buffer = new SfRingBuffer<string>(capacity: 3);
+
+buffer.Enqueue("Log 1");
+buffer.Enqueue("Log 2");
+buffer.Enqueue("Log 3");
+buffer.Enqueue("Log 4"); // Overwrites "Log 1"
+
+// No resizing, no garbage collection pressure
+foreach (var log in buffer)
+    Console.WriteLine(log); // Output: Log 2, Log 3, Log 4
+```
 ### Sorted Dictionary
 
 ```csharp

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -16,16 +17,16 @@ namespace StructForge.Collections
     [DebuggerTypeProxy(typeof(SfTreeDebugView<>))]
     public class SfAvlTree<T> : ISfTree<T>, ICollection<T>
     {
-        /// <summary>Gets the number of elements contained in the tree.</summary>
+        /// <inheritdoc cref="ICollection{T}.Count" />
         public int Count { get; private set; }
 
-        /// <summary>Gets a value indicating whether the collection is read-only.</summary>
+        /// <inheritdoc/>
         public bool IsReadOnly => false;
 
-        /// <summary>Gets a value indicating whether the tree is empty.</summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
-        /// <summary>Gets the height of the tree.</summary>
+        /// <inheritdoc/>
         public int Height => GetHeight(_root);
         
         private SfAvlTreeNode<T> _root;
@@ -49,7 +50,7 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="collection"/> is null.</exception>
         public SfAvlTree(IEnumerable<T> collection, IComparer<T> comparer = null)
         {
-            ArgumentNullException.ThrowIfNull(collection);
+            SfThrowHelper.ThrowIfNull(collection);
             _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             
             T[] arr = collection.ToArray();
@@ -60,19 +61,14 @@ namespace StructForge.Collections
                 TryAdd(item);
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates through the elements in in-order traversal.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator() => InOrder().GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
-        
-        
-        /// <summary>
-        /// Determines whether the specified item exists in the tree using binary search.
-        /// </summary>
-        /// <param name="item">The element to locate.</param>
-        /// <returns><c>true</c> if the item is found; otherwise, <c>false</c>.</returns>
+
+
+        /// <inheritdoc cref="ISfDataStructure{T}.Contains(T)" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
@@ -86,11 +82,7 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>
-        /// Removes the specified element from the tree.
-        /// </summary>
-        /// <param name="item">The element to remove.</param>
-        /// <returns><c>true</c> if the item was removed; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public bool Remove(T item)
         {
             int before = Count;
@@ -135,13 +127,7 @@ namespace StructForge.Collections
             return Rebalance(node);
         }
 
-        /// <summary>
-        /// Determines whether the specified item exists in the tree using the provided equality comparer.
-        /// Performs a linear search (O(n)).
-        /// </summary>
-        /// <param name="item">The element to locate.</param>
-        /// <param name="comparer">The equality comparer to use.</param>
-        /// <returns><c>true</c> if the item is found; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
             foreach (T element in this)
@@ -151,34 +137,21 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>
-        /// Adds the specified item to the tree. Throws if the item already exists.
-        /// </summary>
-        /// <param name="item">The item to add.</param>
-        /// <exception cref="InvalidOperationException">Thrown when the item already exists.</exception>
+        /// <inheritdoc/>
         public void Add(T item)
         {
             if (!TryAdd(item))
                 throw new InvalidOperationException("Duplicate item");
         }
 
-        /// <summary>
-        /// Removes all elements from the tree.
-        /// </summary>
+        /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
             _root = null;
             Count = 0;
         }
 
-        /// <summary>
-        /// Copies the elements of the tree to an existing array, starting at the specified index.
-        /// </summary>
-        /// <param name="array">The destination array.</param>
-        /// <param name="arrayIndex">The starting index in the destination array.</param>
-        /// <exception cref="ArgumentNullException">If <paramref name="array"/> is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">If <paramref name="arrayIndex"/> is negative.</exception>
-        /// <exception cref="ArgumentException">If the destination array is too small.</exception>
+        /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) 
@@ -192,11 +165,7 @@ namespace StructForge.Collections
                 array[arrayIndex++] = item;
         }
 
-        /// <summary>
-        /// Attempts to add an item to the tree.
-        /// </summary>
-        /// <param name="item">The item to add.</param>
-        /// <returns><c>true</c> if added successfully; <c>false</c> if a duplicate exists.</returns>
+        /// <inheritdoc/>
         public bool TryAdd(T item)
         {
             bool added = false;
@@ -285,21 +254,13 @@ namespace StructForge.Collections
             return newRoot;
         }
 
-        /// <summary>
-        /// Returns the smallest (minimum) value in the tree.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the tree is empty.</exception>
+        /// <inheritdoc/>
         public T FindMin() => FindLeftmost(_root).Value;
 
-        /// <summary>
-        /// Returns the largest (maximum) value in the tree.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the tree is empty.</exception>
+        /// <inheritdoc/>
         public T FindMax() => FindRightmost(_root).Value;
 
-        /// <summary>
-        /// Enumerates nodes in in-order traversal (Left → Root → Right).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> InOrder()
         {
             if (_root == null) yield break;
@@ -321,9 +282,7 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>
-        /// Enumerates nodes in pre-order traversal (Root → Left → Right).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> PreOrder()
         {
             if (_root == null) yield break;
@@ -341,9 +300,7 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>
-        /// Enumerates nodes in post-order traversal (Left → Right → Root).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> PostOrder()
         {
             if (_root == null) yield break;
@@ -365,12 +322,7 @@ namespace StructForge.Collections
                 yield return stack2.Pop().Value;
         }
 
-        /// <summary>
-        /// Attempts to find the stored value equal to <paramref name="equalValue"/>.
-        /// </summary>
-        /// <param name="equalValue">The value to locate.</param>
-        /// <param name="actualValue">When found, contains the actual stored value.</param>
-        /// <returns><c>true</c> if found; otherwise, <c>false</c>.</returns>
+        /// <inheritdoc/>
         public bool TryGetValue(T equalValue, out T actualValue)
         {
             var node = _root;
@@ -394,9 +346,7 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>
-        /// Executes the specified action for each element in the tree.
-        /// </summary>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             foreach (T item in this)

@@ -41,10 +41,5 @@ namespace StructForge.Collections
         /// <param name="item">When this method returns, contains the object at the top, if successful; otherwise, the default value of T.</param>
         /// <returns>True if an item was retrieved; false if the stack was empty.</returns>
         bool TryPeek(out T item);
-
-        /// <summary>
-        /// Reduces the capacity of the stack to fit its current count, if there is excessive unused space.
-        /// </summary>
-        void TrimExcess();
     }
 }

@@ -1,17 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>netstandard2.1</TargetFramework>
 		<LangVersion>9</LangVersion>
 		<Nullable>disable</Nullable>
 		<PackageId>StructForge</PackageId>
-		<Version>1.1.1</Version>
+		<Version>1.2.0</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		<Description>A light-weight data structure library for learning and production use.</Description>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
-		<PackageReleaseNotes>Initial release v1.0</PackageReleaseNotes>
+		<PackageReleaseNotes>v1.2.0:
+- Added SfGrid2D | SfGrid3D (Flattened arrays for cache locality).
+- Added SfBitArray | SfBitArray2D | SfBitArray3D (optimized boolean storage).
+- Added SfRingBuffer (Zero-allocation circular queue).
+- Exposed GetRawData() for serialization support.
+		</PackageReleaseNotes>
 	</PropertyGroup>
 	
 	<ItemGroup>

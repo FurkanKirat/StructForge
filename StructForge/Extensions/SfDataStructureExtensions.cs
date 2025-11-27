@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using StructForge.Collections;
+using StructForge.Helpers;
 
 namespace StructForge.Extensions
 {
@@ -10,7 +12,7 @@ namespace StructForge.Extensions
         /// </summary>
         public static T[] ToArray<T>(this ISfDataStructure<T> sfDataStructure)
         {
-            ArgumentNullException.ThrowIfNull(sfDataStructure);
+            SfThrowHelper.ThrowIfNull(sfDataStructure);
 
             if (sfDataStructure.IsEmpty)
                 return Array.Empty<T>();
@@ -19,5 +21,8 @@ namespace StructForge.Extensions
             sfDataStructure.CopyTo(array, 0);
             return array;
         }
+        
+        public static bool IsNullOrEmpty<T>(this ICollection<T> collection)
+            => collection == null || collection.Count == 0;
     }
 }

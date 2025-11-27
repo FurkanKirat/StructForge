@@ -1,4 +1,6 @@
-﻿namespace StructForge.Collections
+﻿using System.Collections.Generic;
+
+namespace StructForge.Collections
 {
     /// <summary>
     /// Represents a generic linked list with methods for adding, removing, and finding elements.
@@ -50,6 +52,14 @@
         /// <param name="item">The item to remove.</param>
         /// <returns>True if the item was found and removed; otherwise, false.</returns>
         bool Remove(T item);
+
+        /// <summary>
+        /// Removes the first occurrence of the specified item from the list.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <param name="comparer">Comparer</param>
+        /// <returns>True if the item was found and removed; otherwise, false.</returns>
+        bool Remove(T item, IEqualityComparer<T> comparer);
 
         /// <summary>
         /// Reverses the order of the elements in the list.

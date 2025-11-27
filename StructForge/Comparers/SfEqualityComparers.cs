@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using StructForge.Comparers.StructForge.Helpers;
 
 namespace StructForge.Comparers
 {
@@ -11,14 +12,14 @@ namespace StructForge.Comparers
 
         /// <summary>Compares by object reference (address equality).</summary>
         public static IEqualityComparer<T> Reference { get; } =
-            EqualityComparer<T>.Create((a, b) => ReferenceEquals(a, b),
+            SfEqualityComparer.Create<T>((a, b) => ReferenceEquals(a, b),
                 a => RuntimeHelpers.GetHashCode(a));
 
         /// <summary>Creates a comparer that compares by a key selector.</summary>
         public static IEqualityComparer<T> ByKey<TKey>(Func<T, TKey> selector, IEqualityComparer<TKey> keyComparer = null)
         {
             keyComparer ??= EqualityComparer<TKey>.Default;
-            return EqualityComparer<T>.Create(
+            return SfEqualityComparer.Create<T>(
                 (a, b) => keyComparer.Equals(selector(a), selector(b)),
                 a => keyComparer.GetHashCode(selector(a))
             );

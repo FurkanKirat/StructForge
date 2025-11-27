@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using StructForge.Comparers;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -16,13 +17,10 @@ namespace StructForge.Collections
         private readonly SfList<T> _data;
         private readonly IComparer<T> _comparer;
 
-        /// <summary>Number of elements in the heap.</summary>
+        /// <inheritdoc/>
         public int Count => _data.Count;
 
-        /// <summary>Always returns false; heap is never read-only.</summary>
-        public bool IsReadOnly => false;
-
-        /// <summary>Returns true if the heap has no elements.</summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         /// <summary>
@@ -41,7 +39,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfBinaryHeap(IEnumerable<T> items, IComparer<T> comparer = null)
         {
-            ArgumentNullException.ThrowIfNull(items);
+            SfThrowHelper.ThrowIfNull(items);
             _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             _data = new SfList<T>();
             foreach (var item in items)
@@ -58,16 +56,14 @@ namespace StructForge.Collections
             _data = new SfList<T>(other._data);
         }
 
-        /// <summary>Returns the top element without removing it.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the heap is empty.</exception>
+        /// <inheritdoc/>
         public T Peek()
         {
             if (IsEmpty) throw new InvalidOperationException("Heap is empty");
             return _data[0];
         }
 
-        /// <summary>Removes and returns the top element of the heap.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the heap is empty.</exception>
+        /// <inheritdoc/>
         public T Pop()
         {
             if (IsEmpty) throw new InvalidOperationException("Heap is empty");
@@ -81,7 +77,7 @@ namespace StructForge.Collections
             return item;
         }
 
-        /// <summary>Adds an item to the heap and maintains heap order.</summary>
+        /// <inheritdoc/>
         public void Add(T item)
         {
             _data.Add(item);
@@ -96,10 +92,10 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>Clears all elements from the heap.</summary>
+        /// <inheritdoc/>
         public void Clear() => _data.Clear();
 
-        /// <summary>Copies the elements of the heap to an array starting at the specified index.</summary>
+        /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -131,26 +127,27 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>Iterates over the elements in the heap.</summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < Count; ++i)
                 yield return _data[i];
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>Executes the specified action for each element.</summary>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             for (int i = 0; i < Count; ++i)
                 action(_data[i]);
         }
 
-        /// <summary>Returns true if the heap contains the specified item (using default comparer).</summary>
+        /// <inheritdoc/>
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
-        /// <summary>Returns true if the heap contains the specified item using a custom comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
             for (int i = 0; i < Count; ++i)
@@ -163,7 +160,7 @@ namespace StructForge.Collections
     }
 
     /// <summary>Represents a max-heap implementation.</summary>
-    public class SfMaxHeap<T> : SfBinaryHeap<T>
+    public sealed class SfMaxHeap<T> : SfBinaryHeap<T>
     {
         public SfMaxHeap(int capacity = SfList<T>.DefaultCapacity, 
             float growthFactor = SfList<T>.DefaultGrowthFactor, 
@@ -176,7 +173,7 @@ namespace StructForge.Collections
     }
 
     /// <summary>Represents a min-heap implementation.</summary>
-    public class SfMinHeap<T> : SfBinaryHeap<T>
+    public sealed class SfMinHeap<T> : SfBinaryHeap<T>
     {
         public SfMinHeap(int capacity = SfList<T>.DefaultCapacity, 
             float growthFactor = SfList<T>.DefaultGrowthFactor,

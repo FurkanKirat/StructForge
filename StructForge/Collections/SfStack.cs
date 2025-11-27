@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using StructForge.Comparers;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -13,9 +14,7 @@ namespace StructForge.Collections
     {
         private readonly SfList<T> _data;
 
-        /// <summary>
-        /// Gets the number of elements in the stack.
-        /// </summary>
+        /// <inheritdoc/>
         public int Count => _data.Count;
 
         /// <summary>
@@ -23,9 +22,7 @@ namespace StructForge.Collections
         /// </summary>
         public int Capacity => _data.Capacity;
 
-        /// <summary>
-        /// Returns true if the stack contains no elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         #region Constructors
@@ -50,7 +47,7 @@ namespace StructForge.Collections
             int extraCapacity = 0, 
             float growthFactor = SfList<T>.DefaultGrowthFactor)
         {
-            ArgumentNullException.ThrowIfNull(collection);
+            SfThrowHelper.ThrowIfNull(collection);
             _data = new SfList<T>(collection, extraCapacity, growthFactor);
         }
         
@@ -66,28 +63,19 @@ namespace StructForge.Collections
 
         #region IDataStructure<T> Implementation
 
-        /// <summary>
-        /// Determines whether the stack contains a specific element using a custom comparer.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer) => _data.Contains(item, comparer);
 
-        /// <summary>
-        /// Determines whether the stack contains a specific element using default equality.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
-        /// <summary>
-        /// Executes the specified action on each element from top to bottom.
-        /// </summary>
-        /// <param name="action">Action to perform.</param>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             _data.ForEach(action);
         }
 
-        /// <summary>
-        /// Returns an enumerator that iterates from top to bottom.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = Count - 1; i >= 0; i--)
@@ -96,16 +84,10 @@ namespace StructForge.Collections
             }
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Copies the stack elements to a destination array starting at specified index.
-        /// </summary>
-        /// <param name="array">Destination array.</param>
-        /// <param name="arrayIndex">Starting index in destination.</param>
-        /// <exception cref="ArgumentNullException">If array is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">If arrayIndex is negative.</exception>
-        /// <exception cref="ArgumentException">If destination array is too small.</exception>
+        /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -116,9 +98,7 @@ namespace StructForge.Collections
                 array[arrayIndex + i] = _data[Count - 1 - i];
         }
 
-        /// <summary>
-        /// Removes all elements from the stack.
-        /// </summary>
+        /// <inheritdoc/>
         public void Clear()
         {
             _data.Clear();
@@ -128,18 +108,13 @@ namespace StructForge.Collections
 
         #region Stack Operations
 
-        /// <summary>
-        /// Inserts an item at the top of the stack.
-        /// </summary>
+        /// <inheritdoc/>
         public void Push(T item)
         {
             _data.Add(item);
         }
 
-        /// <summary>
-        /// Removes and returns the top item.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>
+        /// <inheritdoc/>
         public T Pop()
         {
             if (TryPop(out T item))
@@ -148,10 +123,7 @@ namespace StructForge.Collections
             throw new InvalidOperationException("Stack is empty");
         }
 
-        /// <summary>
-        /// Returns the top item without removing it.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>
+        /// <inheritdoc/>
         public T Peek()
         {
             if (TryPeek(out T item))
@@ -160,11 +132,7 @@ namespace StructForge.Collections
             throw new InvalidOperationException("Stack is empty");
         }
 
-        /// <summary>
-        /// Attempts to remove and return the top item safely.
-        /// </summary>
-        /// <param name="item">The removed item if successful; default(T) otherwise.</param>
-        /// <returns>True if successful; false if empty.</returns>
+        /// <inheritdoc/>
         public bool TryPop(out T item)
         {
             if (IsEmpty)
@@ -179,11 +147,7 @@ namespace StructForge.Collections
             return true;
         }
 
-        /// <summary>
-        /// Attempts to return the top item safely without removing it.
-        /// </summary>
-        /// <param name="item">The item at the top if successful; default(T) otherwise.</param>
-        /// <returns>True if successful; false if empty.</returns>
+        /// <inheritdoc/>
         public bool TryPeek(out T item)
         {
             if (IsEmpty)

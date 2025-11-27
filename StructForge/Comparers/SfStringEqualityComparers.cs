@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using StructForge.Comparers.StructForge.Helpers;
 
 namespace StructForge.Comparers
 {
@@ -10,7 +11,7 @@ namespace StructForge.Comparers
         public static IEqualityComparer<string> InvariantCulture { get; } = StringComparer.InvariantCulture;
         public static IEqualityComparer<string> InvariantCultureIgnoreCase { get; } = StringComparer.InvariantCultureIgnoreCase;
         public static IEqualityComparer<string> Length { get; } =
-            EqualityComparer<string>.Create(
+            SfEqualityComparer.Create<string>(
                 (a, b) => a?.Length == b?.Length,
                 a => a?.Length.GetHashCode() ?? 0
             );

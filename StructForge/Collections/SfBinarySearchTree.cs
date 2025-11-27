@@ -20,14 +20,10 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public int Count { get; private set; }
 
-        /// <summary>
-        /// Gets whether the tree is empty.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
         
-        /// <summary>
-        /// Gets the height of the binary tree.
-        /// </summary>
+        /// <inheritdoc/>
         public int Height => GetHeight(_root);
 
         /// <inheritdoc/>
@@ -68,16 +64,13 @@ namespace StructForge.Collections
 
         #region Traversal API
 
-        /// <summary>
-        /// Returns an enumerator that iterates the tree in-order.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator() => InOrder().GetEnumerator();
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Enumerates nodes using in-order traversal (Left → Root → Right).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> InOrder()
         {
             if (_root == null) yield break;
@@ -100,9 +93,7 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>
-        /// Enumerates nodes using pre-order traversal (Root → Left → Right).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> PreOrder()
         {
             if (_root == null) yield break;
@@ -120,9 +111,7 @@ namespace StructForge.Collections
             }
         }
 
-        /// <summary>
-        /// Enumerates nodes using post-order traversal (Left → Right → Root).
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerable<T> PostOrder()
         {
             if (_root == null) yield break;
@@ -144,6 +133,7 @@ namespace StructForge.Collections
                 yield return stack2.Pop().Value;
         }
 
+        /// <inheritdoc/>
         public bool TryGetValue(T equalValue, out T actualValue)
         {
             var node = _root;
@@ -167,6 +157,7 @@ namespace StructForge.Collections
             return false;
         }
 
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             foreach (T item in this)
@@ -181,19 +172,14 @@ namespace StructForge.Collections
 
         #region Core API
 
-        /// <summary>
-        /// Inserts an item into the tree.
-        /// </summary>
-        /// <exception cref="ArgumentException">Thrown when a duplicate item is added.</exception>
+        /// <inheritdoc/>
         public void Add(T item)
         {
            if (!TryAdd(item)) 
                throw new ArgumentException("Duplicate value is not allowed.", nameof(item));
         }
         
-        /// <summary>
-        /// Inserts an item into the tree without throwing an exception for duplicates.
-        /// </summary>
+        /// <inheritdoc/>
         public bool TryAdd(T item)
         {
             if (_root == null)
@@ -229,18 +215,14 @@ namespace StructForge.Collections
             return true;
         }
 
-        /// <summary>
-        /// Removes all nodes from the tree.
-        /// </summary>
+        /// <inheritdoc/>
         public void Clear()
         {
             _root = null;
             Count = 0;
         }
 
-        /// <summary>
-        /// Determines whether the specified item exists in the tree.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Contains(T item)
         {
             SfBinaryTreeNode<T> current = _root;
@@ -253,9 +235,8 @@ namespace StructForge.Collections
             return false;
         }
         
+        /// <inheritdoc/>
         /// <summary>
-        /// Determines whether the specified item exists in the tree using a linear search.
-        /// 
         /// Note: This method iterates over all elements in the tree, so it is less efficient
         /// than <see cref="Contains(T)"/>, which uses the tree's ordering for a binary search
         /// and performs faster on balanced trees.
@@ -269,12 +250,7 @@ namespace StructForge.Collections
             return false;
         }
 
-        /// <summary>
-        /// Copies the elements of the tree into the given array.
-        /// </summary>
-        /// <exception cref="ArgumentNullException">Thrown when the target array is null.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the array index is negative.</exception>
-        /// <exception cref="ArgumentException">Thrown when the array does not have enough space.</exception>
+        /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) 
@@ -288,29 +264,25 @@ namespace StructForge.Collections
                 array[arrayIndex++] = item;
         }
 
-        /// <summary>
-        /// Removes an item from the tree if it exists.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Remove(T item) => Delete(null, _root, item);
 
-        /// <summary>
-        /// Returns the minimum value in the tree.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the tree is empty.</exception>
+        /// <inheritdoc/>
         public T FindMin() => FindLeftmost(_root).Value;
 
-        /// <summary>
-        /// Returns the maximum value in the tree.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when the tree is empty.</exception>
+        /// <inheritdoc/>
         public T FindMax() => FindRightmost(_root).Value;
         #endregion
    
         
         #region ICollection<T>
+        /// <inheritdoc/>
         int ICollection<T>.Count => Count;
+        /// <inheritdoc/>
         void ICollection<T>.Clear() => Clear();
+        /// <inheritdoc/>
         bool ICollection<T>.Contains(T item) => Contains(item);
+        /// <inheritdoc/>
         void ICollection<T>.CopyTo(T[] array, int arrayIndex) => CopyTo(array, arrayIndex);
         #endregion
 

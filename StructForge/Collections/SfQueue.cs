@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using StructForge.Comparers;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -17,29 +18,25 @@ namespace StructForge.Collections
         private const int DefaultCapacity = 4;
         private const float DefaultGrowthFactor = 2f;
 
-        private T[] _array;
+        private T[] _buffer;
         private readonly float _growthFactor;
-        private int _start;
+        private int _head;
 
-        /// <summary>
-        /// Number of elements currently in the queue.
-        /// </summary>
+        /// <inheritdoc/>
         public int Count { get; private set; }
 
-        /// <summary>
-        /// Returns true if the queue has no elements.
-        /// </summary>
+        /// <inheritdoc/>
         public bool IsEmpty => Count == 0;
 
         /// <summary>
         /// Capacity of the underlying array.
         /// </summary>
-        public int Capacity => _array.Length;
+        public int Capacity => _buffer.Length;
 
         /// <summary>
         /// Gets the index of the first empty slot in the circular array.
         /// </summary>
-        private int FirstEmpty => (_start + Count) % Capacity;
+        private int FirstEmpty => (_head + Count) % Capacity;
 
         #region Constructors
 
@@ -52,7 +49,7 @@ namespace StructForge.Collections
             int capacity = DefaultCapacity,
             float growthFactor = DefaultGrowthFactor)
         {
-            _array = new T[capacity];
+            _buffer = new T[capacity];
             _growthFactor = Math.Max(growthFactor, 1.5f);
         }
 
@@ -68,22 +65,22 @@ namespace StructForge.Collections
             int extraCapacity = 0, 
             float growthFactor = DefaultGrowthFactor)
         {
-            ArgumentNullException.ThrowIfNull(enumerable);
+            SfThrowHelper.ThrowIfNull(enumerable);
             if (enumerable is ICollection<T> collection)
             {
-                _array = new T[collection.Count + extraCapacity];
-                collection.CopyTo(_array, 0);
+                _buffer = new T[collection.Count + extraCapacity];
+                collection.CopyTo(_buffer, 0);
                 Count = collection.Count;
             }
             else
             {
                 T[] array = enumerable.ToArray();
                 Count = array.Length;
-                _array = new T[extraCapacity + array.Length];
-                Array.Copy(array, _array, Count);
+                _buffer = new T[extraCapacity + array.Length];
+                Array.Copy(array, _buffer, Count);
             }
 
-            _start = 0;
+            _head = 0;
             _growthFactor = Math.Max(growthFactor, 1.5f);
         }
 
@@ -91,56 +88,50 @@ namespace StructForge.Collections
 
         #region Enumeration
 
-        /// <summary>
-        /// Returns an enumerator that iterates over the queue in FIFO order.
-        /// </summary>
+        /// <inheritdoc/>
         public IEnumerator<T> GetEnumerator()
         {
             for (int i = 0; i < Count; i++)
-                yield return _array[(_start + i) % Capacity];
+                yield return _buffer[(_head + i) % Capacity];
         }
 
+        /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        /// <summary>
-        /// Executes the specified action for each element in queue order.
-        /// </summary>
-        /// <param name="action">The action to perform on each element.</param>
+        /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
             for (int i = 0; i < Count; i++)
-                action(_array[(_start + i) % Capacity]);
+                action(_buffer[(_head + i) % Capacity]);
         }
 
         #endregion
 
         #region Core Methods
 
-        /// <summary>Adds an item to the end of the queue.</summary>
+        /// <inheritdoc/>
         public void Enqueue(T item)
         {
             GrowIfNeeded(Count + 1);
-            _array[FirstEmpty] = item;
+            _buffer[FirstEmpty] = item;
             Count++;
         }
 
-        /// <summary>Removes and returns the front item of the queue.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the queue is empty.</exception>
+        /// <inheritdoc/>
         public T Dequeue()
         {
             if (TryDequeue(out T item)) return item;
             throw new InvalidOperationException("Queue is empty");
         }
 
-        /// <summary>Returns the front item without removing it.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the queue is empty.</exception>
+        /// <inheritdoc/>
         public T Peek()
         {
             if (TryPeek(out T item)) return item;
             throw new InvalidOperationException("Queue is empty");
         }
 
-        /// <summary>Attempts to remove and return the front item. Returns false if the queue is empty.</summary>
+        /// <inheritdoc/>
         public bool TryDequeue(out T item)
         {
             if (IsEmpty)
@@ -149,14 +140,14 @@ namespace StructForge.Collections
                 return false;
             }
 
-            item = _array[_start];
-            _array[_start] = default;
-            _start = (_start + 1) % Capacity;
+            item = _buffer[_head];
+            _buffer[_head] = default;
+            _head = (_head + 1) % Capacity;
             Count--;
             return true;
         }
 
-        /// <summary>Attempts to return the front item without removing it. Returns false if empty.</summary>
+        /// <inheritdoc/>
         public bool TryPeek(out T item)
         {
             if (IsEmpty)
@@ -164,34 +155,34 @@ namespace StructForge.Collections
                 item = default;
                 return false;
             }
-            item = _array[_start];
+            item = _buffer[_head];
             return true;
         }
 
-        /// <summary>Removes all elements from the queue.</summary>
+        /// <inheritdoc/>
         public void Clear()
         {
             for (int i = 0; i < Count; i++)
-                _array[(_start + i) % Capacity] = default;
-            _start = 0;
+                _buffer[(_head + i) % Capacity] = default;
+            _head = 0;
             Count = 0;
         }
 
-        /// <summary>Checks if the queue contains the specified item using the default comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
-        /// <summary>Checks if the queue contains the specified item using a custom comparer.</summary>
+        /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
             for (int i = 0; i < Count; i++)
             {
-                int index = (_start + i) % Capacity;
-                if (comparer.Equals(_array[index], item)) return true;
+                int index = (_head + i) % Capacity;
+                if (comparer.Equals(_buffer[index], item)) return true;
             }
             return false;
         }
 
-        /// <summary>Copies the elements of the queue to an array starting at the specified index.</summary>
+        /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
             if (array == null) throw new ArgumentNullException(nameof(array));
@@ -199,7 +190,7 @@ namespace StructForge.Collections
             if (arrayIndex + Count > array.Length) throw new ArgumentException("Destination array too small");
 
             for (int i = 0; i < Count; i++)
-                array[arrayIndex + i] = _array[(_start + i) % Capacity];
+                array[arrayIndex + i] = _buffer[(_head + i) % Capacity];
         }
 
         #endregion
@@ -213,22 +204,21 @@ namespace StructForge.Collections
             {
                 T[] newArray = new T[Count];
                 for (int i = 0; i < Count; i++)
-                    newArray[i] = _array[(_start + i) % Capacity];
-                _array = newArray;
-                _start = 0;
+                    newArray[i] = _buffer[(_head + i) % Capacity];
+                _buffer = newArray;
+                _head = 0;
             }
         }
 
-        /// <summary>Returns the last item without removing it. Throws if empty.</summary>
-        /// <exception cref="InvalidOperationException">Thrown if the queue is empty.</exception>
+        /// <inheritdoc/>
         public T PeekLast()
         {
             if (IsEmpty) throw new InvalidOperationException("Queue is empty");
-            int lastIndex = (_start + Count - 1) % Capacity;
-            return _array[lastIndex];
+            int lastIndex = (_head + Count - 1) % Capacity;
+            return _buffer[lastIndex];
         }
 
-        /// <summary>Attempts to return the last item without removing it. Returns false if empty.</summary>
+        /// <inheritdoc/>
         public bool TryPeekLast(out T item)
         {
             if (IsEmpty)
@@ -236,8 +226,8 @@ namespace StructForge.Collections
                 item = default;
                 return false;
             }
-            int lastIndex = (_start + Count - 1) % Capacity;
-            item = _array[lastIndex];
+            int lastIndex = (_head + Count - 1) % Capacity;
+            item = _buffer[lastIndex];
             return true;
         }
 
@@ -257,9 +247,9 @@ namespace StructForge.Collections
                 int newCapacity = Math.Max((int)(Capacity * _growthFactor), newCount);
                 T[] newArray = new T[newCapacity];
                 for (int i = 0; i < Count; i++)
-                    newArray[i] = _array[(_start + i) % Capacity];
-                _array = newArray;
-                _start = 0;
+                    newArray[i] = _buffer[(_head + i) % Capacity];
+                _buffer = newArray;
+                _head = 0;
             }
         }
 

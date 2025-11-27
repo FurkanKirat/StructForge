@@ -10,16 +10,6 @@ namespace StructForge.Collections
     public interface ISfSet<T> : ISfDataStructure<T>
     {
         /// <summary>
-        /// Gets the smallest (minimum) element in the set.
-        /// </summary>
-        T Min { get; }
-
-        /// <summary>
-        /// Gets the largest (maximum) element in the set.
-        /// </summary>
-        T Max { get; }
-
-        /// <summary>
         /// Attempts to add an element to the set.
         /// Returns <see langword="true"/> if the element was added successfully,
         /// or <see langword="false"/> if it already exists.
@@ -75,6 +65,9 @@ namespace StructForge.Collections
         /// Tries to retrieve the actual stored value that is equal to the specified value
         /// based on the set's equality or comparison logic.
         /// </summary>
+        /// <param name="equalValue">The value to search for in the set.</param>
+        /// <param name="actualValue">The actual stored value if found; otherwise, the default value of T.</param>
+        /// <returns>True if a matching value is found; otherwise, false.</returns>
         bool TryGetValue(T equalValue, out T actualValue);
     }
 }
