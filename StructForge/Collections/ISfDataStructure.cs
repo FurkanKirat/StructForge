@@ -46,5 +46,11 @@ namespace StructForge.Collections
         /// <param name="array">Destination array.</param>
         /// <param name="arrayIndex">Zero-based index at which copying begins.</param>
         void CopyTo(T[] array, int arrayIndex);
+        
+        /// <summary>
+        /// Creates a new array and copies the elements of the collection to that array.
+        /// </summary>
+        /// <returns>The new created array.</returns>
+        T[] ToArray();
     }
 }

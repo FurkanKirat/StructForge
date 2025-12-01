@@ -1,73 +1,85 @@
-﻿#nullable enable
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StructForge.Comparers
 {
     /// <summary>
-    /// Provides generic comparer utilities for any type <typeparamref name="T"/>.
-    /// Includes default, reverse, and null-safe comparers.
+    /// Provides high-performance, allocation-free comparer instances.
+    /// Uses cached backing fields with inlined properties for zero-overhead access.
     /// </summary>
-    /// <typeparam name="T">The type of elements to compare.</typeparam>
     public static class SfComparers<T>
     {
+        // --- BACKING FIELDS (Singleton Instances) ---
+        private static readonly IComparer<T> _defaultComparer = Comparer<T>.Default;
+        
+        private static readonly IComparer<T> _reverseComparer = 
+            new SfComparerUtils.SfReverseComparerWrapper<T>(_defaultComparer);
+            
+        private static readonly IComparer<T> _nullsLastComparer = new SfNullsLastComparer();
+        private static readonly IComparer<T> _nullsFirstComparer = new SfNullsFirstComparer();
+
+        // --- PUBLIC PROPERTIES (Inlined) ---
+
         /// <summary>
         /// Gets the default comparer for type <typeparamref name="T"/>.
-        /// Equivalent to <see cref="Comparer{T}.Default"/>.
         /// </summary>
-        public static IComparer<T> DefaultComparer { get; } = Comparer<T>.Default;
-
-        /// <summary>
-        /// Gets a comparer that reverses the order of the <see cref="DefaultComparer"/>.
-        /// </summary>
-        public static IComparer<T> ReverseComparer { get; } =
-            Comparer<T>.Create((a, b) => DefaultComparer.Compare(b, a));
-        
-        
-        /// <summary>
-        /// Creates a comparer from a key selector function.
-        /// </summary>
-        public static IComparer<T> FromSelector<TKey>(Func<T, TKey> selector)
-            where TKey : IComparable<TKey>
+        public static IComparer<T> DefaultComparer
         {
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-            return Comparer<T>.Create((a, b) => selector(a).CompareTo(selector(b)));
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _defaultComparer;
         }
 
         /// <summary>
-        /// Creates a reversed comparer from a key selector function.
+        /// Gets an optimized comparer that reverses the order.
         /// </summary>
-        public static IComparer<T> FromSelectorReversed<TKey>(Func<T, TKey> selector)
-            where TKey : IComparable<TKey>
+        public static IComparer<T> ReverseComparer
         {
-            if (selector == null) throw new ArgumentNullException(nameof(selector));
-            return Comparer<T>.Create((a, b) => selector(b).CompareTo(selector(a)));
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _reverseComparer;
         }
 
         /// <summary>
-        /// Gets a comparer that treats <c>null</c> values as greater than all non-null values.
-        /// (Nulls appear last when sorting.)
+        /// Comparer that treats nulls as greater than non-nulls (Nulls at the end).
         /// </summary>
-        public static IComparer<T?> NullsLastComparer { get; } =
-            Comparer<T?>.Create((a, b) =>
-            {
-                if (a is null && b is null) return 0;
-                if (a is null) return 1;
-                if (b is null) return -1;
-                return DefaultComparer.Compare(a, b);
-            });
+        public static IComparer<T> NullsLastComparer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _nullsLastComparer;
+        }
 
         /// <summary>
-        /// Gets a comparer that treats <c>null</c> values as less than all non-null values.
-        /// (Nulls appear first when sorting.)
+        /// Comparer that treats nulls as less than non-nulls (Nulls at the start).
         /// </summary>
-        public static IComparer<T?> NullsFirstComparer { get; } =
-            Comparer<T?>.Create((a, b) =>
+        public static IComparer<T> NullsFirstComparer
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _nullsFirstComparer;
+        }
+        
+        // --- CONCRETE IMPLEMENTATIONS ---
+
+        private sealed class SfNullsLastComparer : IComparer<T>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(T x, T y)
             {
-                if (a is null && b is null) return 0;
-                if (a is null) return -1;
-                if (b is null) return 1;
-                return DefaultComparer.Compare(a, b);
-            });
+                if (x is null && y is null) return 0;
+                if (x is null) return 1;
+                if (y is null) return -1;
+                return _defaultComparer.Compare(x, y);
+            }
+        }
+
+        private sealed class SfNullsFirstComparer : IComparer<T>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(T x, T y)
+            {
+                if (x is null && y is null) return 0;
+                if (x is null) return -1;
+                if (y is null) return 1;
+                return _defaultComparer.Compare(x, y);
+            }
+        }
     }
 }

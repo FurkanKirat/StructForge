@@ -1,39 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StructForge.Comparers
 {
-    /// <summary>
-    /// Provides predefined string comparers for various ordering rules,
-    /// including ordinal, case-insensitive, and length-based comparisons.
-    /// </summary>
     public static class SfStringComparers
     {
-        /// <summary>
-        /// Compares two strings using ordinal (binary) comparison rules.
-        /// Case-sensitive and culture-invariant.
-        /// </summary>
-        public static IComparer<string> Ordinal { get; } =
-            StringComparer.Ordinal;
+        // --- BACKING FIELDS ---
+        private static readonly IComparer<string> _ordinal = StringComparer.Ordinal;
+        private static readonly IComparer<string> _ordinalIgnoreCase = StringComparer.OrdinalIgnoreCase;
+        private static readonly IComparer<string> _length = new SfStringLengthComparer();
 
-        /// <summary>
-        /// Compares two strings using ordinal (binary) comparison rules,
-        /// but ignores case differences.
-        /// </summary>
-        public static IComparer<string> OrdinalIgnoreCase { get; } =
-            StringComparer.OrdinalIgnoreCase;
+        // --- PROPERTIES ---
 
-        /// <summary>
-        /// Compares two strings by their length.
-        /// Null values are treated as shorter than any non-null string.
-        /// </summary>
-        public static IComparer<string> Length { get; } =
-            Comparer<string>.Create((a, b) =>
+        public static IComparer<string> Ordinal
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ordinal;
+        }
+
+        public static IComparer<string> OrdinalIgnoreCase
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _ordinalIgnoreCase;
+        }
+
+        public static IComparer<string> Length
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _length;
+        }
+
+        // --- CONCRETE CLASS ---
+
+        private sealed class SfStringLengthComparer : IComparer<string>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(string x, string y)
             {
-                if (a is null && b is null) return 0;
-                if (a is null) return -1;
-                if (b is null) return 1;
-                return a.Length.CompareTo(b.Length);
-            });
+                if (ReferenceEquals(x, y)) return 0;
+                if (x is null) return -1;
+                if (y is null) return 1;
+                return x.Length.CompareTo(y.Length);
+            }
+        }
     }
 }

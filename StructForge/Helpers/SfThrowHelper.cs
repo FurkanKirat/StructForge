@@ -1,24 +1,45 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace StructForge.Helpers
 {
     internal static class SfThrowHelper
     {
-        [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
-        [SuppressMessage("ReSharper", "MultipleEnumeration")]
-        // ReSharper disable once PossibleMultipleEnumeration
-        
-        public static void ThrowIfNull<T>(T value, string paramName = null)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void ThrowArgumentNull(string paramName)
         {
-            if (value == null)
-                throw new ArgumentNullException(paramName);
+            throw new ArgumentNullException(paramName);
         }
 
-        public static void ThrowIfNonPositive(int value, string paramName = null)
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void ThrowArgumentOutOfRange(string paramName, string message = null)
         {
-            if (value <= 0)
-                throw new ArgumentOutOfRangeException(paramName);
+            throw new ArgumentOutOfRangeException(paramName, message);
+        }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void ThrowArgument(string message, string paramName = null)
+        {
+            throw new ArgumentException(message, paramName);
+        }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void ThrowInvalidOperation(string message)
+        {
+            throw new InvalidOperationException(message);
+        }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
+        public static void ThrowKeyNotFound(string message = null)
+        {
+            throw new KeyNotFoundException(message);
         }
     }
 }

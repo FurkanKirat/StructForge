@@ -1,29 +1,47 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<LangVersion>9</LangVersion>
+		
+		<LangVersion>latest</LangVersion>
+		
 		<Nullable>disable</Nullable>
+		
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+
 		<PackageId>StructForge</PackageId>
-		<Version>1.2.0</Version>
+		<Version>1.3.0</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
-		<Description>A light-weight data structure library for learning and production use.</Description>
+		
+		<Description>High-performance, zero-allocation data structures library for .NET and Unity. Features cache-friendly grids, SIMD-accelerated bit arrays, and zero-alloc ring buffers.</Description>
+		
+		<PackageTags>performance;struct;gamedev;unity;memory;cache;grid;ringbuffer;zero-allocation;ecs</PackageTags>
+
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
-		<PackageReleaseNotes>v1.2.0:
-- Added SfGrid2D | SfGrid3D (Flattened arrays for cache locality).
-- Added SfBitArray | SfBitArray2D | SfBitArray3D (optimized boolean storage).
-- Added SfRingBuffer (Zero-allocation circular queue).
-- Exposed GetRawData() for serialization support.
+		
+		<PackageReleaseNotes>v1.3.0 - High-Performance Update:
+🚀 Performance:
+- SfBitArray3D: Added AVX-optimized PopCount (~360x faster than native loops).
+- SfRingBuffer: Removed modulo operations, now ~3.5x faster than Queue&lt;T&gt;.
+- SfGrid2D/3D: Optimized memory layout for cache locality.
+
+✨ Features:
+- Zero-Allocation Iteration: All collections now use struct enumerators.
+- AsSpan() Support: Added direct memory access for Zero-Copy serialization.
+- SfList: Added RemoveAtSwap (O(1) removal) and EnsureCapacity.
+
+⚠️ Breaking Changes:
+- Removed SfDictionary and SfSortedDictionary temporarily for re-architecture.
 		</PackageReleaseNotes>
+		
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 	
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="" />
 	</ItemGroup>
-
-
 
 </Project>

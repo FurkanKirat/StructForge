@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Enumerators;
+using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
@@ -10,21 +13,41 @@ namespace StructForge.Collections
     /// Supports overwrite when full or TryEnqueue for overflow-safe insertion.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the queue.</typeparam>
-    public class SfRingBuffer<T> : ISfQueue<T>
+    public sealed class SfRingBuffer<T> : ISfQueue<T>
     {
         private readonly T[] _buffer; // The underlying fixed-size array storing elements
-        private int _head;            // Index of the first element in the queue (front)
+        private int _head; // Index of the first element in the queue (front)
+        private int _tail;
+        private int _count;
 
         /// <inheritdoc/>
-        public int Count { get; private set; }
+        public int Count 
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count;
+        }
 
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count == 0;
+        }
+
+        public bool IsFull
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count == Capacity;
+        }
 
         /// <summary>
         /// Capacity of the underlying buffer.
         /// </summary>
-        public int Capacity => _buffer.Length;
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _buffer.Length;
+        }
 
         /// <summary>
         /// Initializes a new ring buffer with the specified capacity.
@@ -37,12 +60,10 @@ namespace StructForge.Collections
 
         #region Enumeration
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfCircularQueueEnumerator<T> GetEnumerator() => new(_buffer, _head, _count);
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (int i = 0; i < Count; i++)
-                yield return _buffer[(_head + i) % Capacity];
-        }
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -50,7 +71,7 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
                 action(_buffer[(_head + i) % Capacity]);
         }
 
@@ -64,7 +85,7 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 int index = (_head + i) % Capacity;
                 if (comparer.Equals(_buffer[index], item)) return true;
@@ -75,21 +96,53 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void Clear()
         {
-            for (int i = 0; i < Count; i++)
-                _buffer[(_head + i) % Capacity] = default;
+            if (!IsEmpty)
+            {
+                if (_head < _tail)
+                {
+                    Array.Clear(_buffer, _head, _count);
+                }
+                else
+                {
+                    Array.Clear(_buffer, _head, Capacity - _head);
+                    Array.Clear(_buffer, 0, _tail);
+                }
+            }
+            
             _head = 0;
-            Count = 0;
+            _tail = 0;
+            _count = 0;
         }
 
         /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException(nameof(array));
-            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (arrayIndex + Count > array.Length) throw new ArgumentException("Destination array too small");
+            if (array is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(array));
+            if (arrayIndex < 0)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(arrayIndex));
+            if (arrayIndex + _count > array.Length) 
+                SfThrowHelper.ThrowArgument("Destination array is not large enough.");
 
-            for (int i = 0; i < Count; i++)
-                array[arrayIndex + i] = _buffer[(_head + i) % Capacity];
+            if (IsEmpty) return;
+            
+            if (_head < _tail)
+                Array.Copy(_buffer, _head, array, arrayIndex, _count);
+            else
+            {
+                int firstPart = Capacity - _head;
+                Array.Copy(_buffer, _head, array, arrayIndex, firstPart);
+                Array.Copy(_buffer, 0, array, arrayIndex + firstPart, _tail);
+            }
+                
+        }
+
+        /// <inheritdoc/>
+        public T[] ToArray()
+        {
+            T[] arr = new T[_count];
+            CopyTo(arr, 0);
+            return arr;
         }
 
         #endregion
@@ -97,19 +150,25 @@ namespace StructForge.Collections
         #region Enqueue Methods
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Enqueue(T item)
         {
-            if (Count == Capacity) 
+            _buffer[_tail] = item;
+            int nextTail = _tail + 1;
+            if (nextTail == Capacity) nextTail = 0;
+            _tail = nextTail;
+            
+            if (IsFull) 
             {
                 // Overwrite the oldest element and move head forward
-                _buffer[_head] = item;
-                _head = (_head + 1) % Capacity;
+                int nextHead = _head + 1;
+                if (nextHead == Capacity) nextHead = 0;
+                _head = nextHead;
             }
             else
             {
                 // Add normally to the end
-                _buffer[(_head + Count) % Capacity] = item;
-                Count++;
+                _count++;
             }
         }
 
@@ -117,11 +176,16 @@ namespace StructForge.Collections
         /// Attempts to add an item without overwriting.
         /// Returns false if the queue is full.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryEnqueue(T item)
         {
-            if (Count == Capacity) return false;
-            _buffer[(_head + Count) % Capacity] = item;
-            Count++;
+            if (_count == Capacity) return false;
+            _buffer[_tail] = item;
+            
+            int nextTail = _tail + 1;
+            if (nextTail == Capacity) nextTail = 0;
+            _tail = nextTail;
+            _count++;
             return true;
         }
 
@@ -130,20 +194,35 @@ namespace StructForge.Collections
         #region Dequeue & Peek Methods
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Dequeue()
         {
-            if (TryDequeue(out T item)) return item;
-            throw new InvalidOperationException("Queue is empty");
+            if (IsEmpty)
+                SfThrowHelper.ThrowInvalidOperation("Queue is empty");
+            
+            T item = _buffer[_head];
+            _buffer[_head] = default;
+
+            int nextHead = _head + 1;
+            if (nextHead == Capacity) nextHead = 0;
+            _head = nextHead;
+
+            _count--;
+            return item;
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek()
         {
-            if (TryPeek(out T item)) return item;
-            throw new InvalidOperationException("Queue is empty");
+            if (IsEmpty)
+                SfThrowHelper.ThrowInvalidOperation("Queue is empty");
+            
+            return _buffer[_head];
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryDequeue(out T item)
         {
             if (IsEmpty)
@@ -154,12 +233,16 @@ namespace StructForge.Collections
 
             item = _buffer[_head];
             _buffer[_head] = default;
-            _head = (_head + 1) % Capacity;
-            Count--;
+            int nextHead = _head + 1;
+            if (nextHead == Capacity) nextHead = 0;
+            _head = nextHead;
+            
+            _count--;
             return true;
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPeek(out T item)
         {
             if (IsEmpty)
@@ -176,13 +259,22 @@ namespace StructForge.Collections
         #region Last Item Access
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T PeekLast()
         {
-            if (TryPeekLast(out T item)) return item;
-            throw new InvalidOperationException("Queue is empty");
+            if (IsEmpty) 
+                SfThrowHelper.ThrowInvalidOperation("Queue is empty");
+            int index = _tail - 1;
+            if (index < 0) 
+            {
+                index = Capacity - 1;
+            }
+
+            return _buffer[index];
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPeekLast(out T item)
         {
             if (IsEmpty)
@@ -190,8 +282,14 @@ namespace StructForge.Collections
                 item = default;
                 return false;
             }
-            int lastIndex = (_head + Count - 1) % Capacity;
-            item = _buffer[lastIndex];
+
+            int index = _tail - 1;
+            if (index < 0) 
+            {
+                index = Capacity - 1;
+            }
+
+            item = _buffer[index];
             return true;
         }
 

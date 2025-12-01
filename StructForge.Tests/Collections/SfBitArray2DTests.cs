@@ -50,20 +50,20 @@ public class SfBitArray2DTests
     {
         var arr = new SfBitArray2D(10, 10);
 
-        Assert.Equal(0, arr.Index(0, 0));
-        Assert.Equal(5, arr.Index(5, 0));
-        Assert.Equal(10, arr.Index(0, 1));
-        Assert.Equal(55, arr.Index(5, 5));
+        Assert.Equal(0, arr.IndexSafe(0, 0));
+        Assert.Equal(5, arr.IndexSafe(5, 0));
+        Assert.Equal(10, arr.IndexSafe(0, 1));
+        Assert.Equal(55, arr.IndexSafe(5, 5));
     }
 
     [Fact]
     public void Index_OutOfRange_Throws()
     {
         var arr = new SfBitArray2D(5, 5);
-        Assert.Throws<ArgumentOutOfRangeException>(() => arr.Index(-1, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => arr.Index(5, 0));
-        Assert.Throws<ArgumentOutOfRangeException>(() => arr.Index(0, -1));
-        Assert.Throws<ArgumentOutOfRangeException>(() => arr.Index(0, 5));
+        Assert.Throws<ArgumentOutOfRangeException>(() => arr.IndexSafe(-1, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => arr.IndexSafe(5, 0));
+        Assert.Throws<ArgumentOutOfRangeException>(() => arr.IndexSafe(0, -1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => arr.IndexSafe(0, 5));
     }
 
     [Fact]

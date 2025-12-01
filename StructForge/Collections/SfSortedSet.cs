@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Extensions;
 using StructForge.Helpers;
@@ -15,7 +16,7 @@ namespace StructForge.Collections
     /// </summary>
     [DebuggerDisplay("Count = {Count}")]
     [DebuggerTypeProxy(typeof(SfTreeDebugView<>))]
-    public class SfSortedSet<T> : ISfSet<T>, ICollection<T>
+    public sealed class SfSortedSet<T> : ISfSet<T>, ICollection<T>
     {
         /// <summary>
         /// The underlying AVL tree that stores the elements.
@@ -28,23 +29,43 @@ namespace StructForge.Collections
         private readonly IComparer<T> _comparer;
 
         /// <inheritdoc cref="ICollection{T}.Count" />
-        public int Count => _tree.Count;
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _tree.Count;
+        }
 
         /// <inheritdoc/>
-        public bool IsReadOnly => false;
+        public bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => false;
+        }
 
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Count == 0;
+        }
 
         /// <summary>
         /// Gets the minimum element in the set.
         /// </summary>
-        public T Min => _tree.FindMin();
+        public T Min
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _tree.FindMin();
+        }
 
         /// <summary>
         /// Gets the maximum element in the set.
         /// </summary>
-        public T Max => _tree.FindMax();
+        public T Max
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _tree.FindMax();
+        }
 
         /// <summary>
         /// Initializes an empty sorted set with an optional comparer.
@@ -65,8 +86,10 @@ namespace StructForge.Collections
             _tree = new SfAvlTree<T>(collection, _comparer);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfAvlTree<T>.SfAvlTreeInOrderEnumerator GetEnumerator() => new(_tree);
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator() => _tree.GetEnumerator();
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -75,7 +98,7 @@ namespace StructForge.Collections
         public void Add(T item)
         {
             if (!TryAdd(item))
-                throw new InvalidOperationException("Duplicate item");
+                SfThrowHelper.ThrowInvalidOperation("Duplicate item");
         }
 
         /// <inheritdoc/>
@@ -97,6 +120,14 @@ namespace StructForge.Collections
         public void CopyTo(T[] array, int arrayIndex) => _tree.CopyTo(array, arrayIndex);
 
         /// <inheritdoc/>
+        public T[] ToArray()
+        {
+            T[] arr = new T[Count];
+            CopyTo(arr, 0);
+            return arr;
+        }
+
+        /// <inheritdoc/>
         public void ForEach(Action<T> action) => _tree.ForEach(action);
 
         /// <inheritdoc/>
@@ -109,7 +140,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void UnionWith(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
                 _tree.TryAdd(item);
         }
@@ -117,7 +150,8 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void IntersectWith(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
 
             var otherSet = new HashSet<T>(other, SfEqualityComparers<T>.Default);
             var toRemove = new List<T>();
@@ -135,7 +169,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void ExceptWith(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
                 _tree.Remove(item);
         }
@@ -143,7 +179,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void SymmetricExceptWith(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
             {
                 if (!_tree.Remove(item))
@@ -154,7 +192,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool IsSubsetOf(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             var otherSet = new HashSet<T>(other);
             foreach (var item in _tree)
             {
@@ -167,7 +207,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool IsSupersetOf(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
             {
                 if (!_tree.Contains(item))
@@ -179,7 +221,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Overlaps(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
             {
                 if (_tree.Contains(item))
@@ -191,7 +235,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool SetEquals(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             var otherArr = other.OrderBy(x => x, _comparer).ToArray();
             if (otherArr.Length != Count)
                 return false;

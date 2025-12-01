@@ -8,9 +8,9 @@ using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
-    public class SfHashSet<T> : ISfSet<T>, ICollection<T>
+    public sealed class SfHashSet<T> : ISfSet<T>, ICollection<T>
     {
-        private struct SfHashSetNode
+        internal struct SfHashSetNode
         {
             public T Value;
             public int Next;
@@ -22,13 +22,28 @@ namespace StructForge.Collections
             }
         }
 
+        private int _count;
+
         /// <inheritdoc cref="ICollection{T}.Count" />
-        public int Count { get; private set; }
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count;
+        }
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count == 0;
+        }
+
         /// <inheritdoc/>
-        public bool IsReadOnly => false;
-        
+        public bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => false;
+        }
+
         private int[] _buckets;
         private SfHashSetNode[] _nodes;
         private readonly IEqualityComparer<T> _comparer;
@@ -69,19 +84,61 @@ namespace StructForge.Collections
             for (int i = 0; i < arr.Length; i++)
                 TryAdd(arr[i]);
         }
-        /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator()
+
+        
+        public struct SfHashSetEnumerator : IEnumerator<T>
         {
-            for (int i = 0; i < Count; i++)
-                yield return _nodes[i].Value;
+            private readonly SfHashSetNode[] _nodes;
+            private readonly int _count;
+            private int _index;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SfHashSetEnumerator(SfHashSetNode[] nodes, int count)
+            {
+                _nodes = nodes;
+                _count = count;
+                _index = -1;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                int next = _index + 1;
+                if (next < _count)
+                {
+                    _index = next;
+                    return true;
+                }
+                return false;
+            }
+            
+            public ref T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ref _nodes[_index].Value;
+            }
+
+            T IEnumerator<T>.Current => _nodes[_index].Value;
+            object IEnumerator.Current => _nodes[_index].Value;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset() => _index = -1;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose() { }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfHashSetEnumerator GetEnumerator() => new(_nodes, _count);
+
+        /// <inheritdoc/>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
                 action(_nodes[i].Value);
         }
 
@@ -108,6 +165,7 @@ namespace StructForge.Collections
             if (Equals(comparer, _comparer))
                 return Contains(item);
             
+            comparer ??= SfEqualityComparers<T>.Default;
             foreach (T element in this)
                 if (comparer.Equals(item, element))
                     return true;
@@ -118,7 +176,7 @@ namespace StructForge.Collections
         public void Add(T item)
         {
             if (!TryAdd(item))
-                throw new InvalidOperationException("Duplicate item.");
+                SfThrowHelper.ThrowInvalidOperation("Duplicate item.");
         }
         
         /// <inheritdoc/>
@@ -140,14 +198,14 @@ namespace StructForge.Collections
                         _nodes[prev].Next = _nodes[i].Next;
                     }
                     
-                    if (i != Count - 1)
+                    if (i != _count - 1)
                     {
-                        _nodes[i] = _nodes[Count - 1];
+                        _nodes[i] = _nodes[_count - 1];
 
                         int movedBucketIndex = GetBucketIndex(_nodes[i].Value);
                         int j = _buckets[movedBucketIndex];
                         int prevJ = -1;
-                        while (j != Count - 1)
+                        while (j != _count - 1)
                         {
                             prevJ = j;
                             j = _nodes[j].Next;
@@ -158,7 +216,7 @@ namespace StructForge.Collections
                         else
                             _nodes[prevJ].Next = i;
                     }
-                    Count--;
+                    _count--;
                     return true;
                 }
                 prev = i;
@@ -175,28 +233,36 @@ namespace StructForge.Collections
             {
                 _buckets[i] = -1;
             }
-            Array.Clear(_nodes, 0, Count);
-            Count = 0;
+            Array.Clear(_nodes, 0, _count);
+            _count = 0;
         }
 
         /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) 
-                throw new ArgumentNullException(nameof(array));
+            if (array is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(array));
             if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (arrayIndex + Count > array.Length)
-                throw new ArgumentException("Destination array is not large enough.");
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(arrayIndex));
+            if (arrayIndex + _count > array.Length) 
+                SfThrowHelper.ThrowArgument("Destination array is not large enough.");
             
             foreach (T item in this)
                 array[arrayIndex++] = item;
+        }
+
+        /// <inheritdoc/>
+        public T[] ToArray()
+        {
+            T[] arr = new T[_count];
+            CopyTo(arr, 0);
+            return arr;
         }
         
         /// <inheritdoc/>
         public bool TryAdd(T item)
         {
-            if (Count >= _buckets.Length * LoadFactor)
+            if (_count >= _buckets.Length * LoadFactor)
             {
                 Resize();
             }
@@ -210,12 +276,12 @@ namespace StructForge.Collections
                 prev = i;
             }
             
-            _nodes[Count] = new SfHashSetNode(item, -1);
+            _nodes[_count] = new SfHashSetNode(item, -1);
             if (prev < 0)
-                _buckets[bucketIndex] = Count;
+                _buckets[bucketIndex] = _count;
             else
-                _nodes[prev].Next = Count;
-            Count++;
+                _nodes[prev].Next = _count;
+            _count++;
             return true;
         }
 
@@ -231,9 +297,9 @@ namespace StructForge.Collections
         {
             SfHashSet<T> otherSet = new SfHashSet<T>(other, _comparer);
 
-            SfList<T> toRemove = new SfList<T>(Math.Min(otherSet.Count, Count));
+            SfList<T> toRemove = new SfList<T>(Math.Min(otherSet._count, _count));
 
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 if (!otherSet.Contains(_nodes[i].Value))
                     toRemove.Add(_nodes[i].Value);
@@ -250,9 +316,9 @@ namespace StructForge.Collections
         {
             SfHashSet<T> otherSet = new SfHashSet<T>(other, _comparer);
 
-            SfList<T> toRemove = new SfList<T>(Math.Min(otherSet.Count, Count));
+            SfList<T> toRemove = new SfList<T>(Math.Min(otherSet._count, _count));
 
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 if (otherSet.Contains(_nodes[i].Value))
                     toRemove.Add(_nodes[i].Value);
@@ -297,7 +363,9 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Overlaps(IEnumerable<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other);
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+            
             foreach (var item in other)
             {
                 if (Contains(item))
@@ -311,7 +379,7 @@ namespace StructForge.Collections
         {
             SfHashSet<T> otherSet = new SfHashSet<T>(other, _comparer);
             
-            if (otherSet.Count != Count)
+            if (otherSet._count != _count)
                 return false;
 
             foreach (T item in this)
@@ -355,7 +423,7 @@ namespace StructForge.Collections
             SfHashSetNode[] newNodes = new SfHashSetNode[newSize];
             Array.Copy(_nodes, 0, newNodes, 0, _nodes.Length);
 
-            for (int i = 0; i < Count; i++)
+            for (int i = 0; i < _count; i++)
             {
                 int hash = (_comparer.GetHashCode(newNodes[i].Value) & 0x7fffffff) % newSize;
                 newNodes[i].Next = newBuckets[hash];

@@ -1,51 +1,130 @@
 ﻿using BenchmarkDotNet.Attributes;
 using StructForge.Collections;
 
-namespace StructForge.Benchmarks.Collections
+namespace StructForge.Benchmarks.Collections;
+
+[MemoryDiagnoser]
+[RankColumn]
+public class SfHashSetBenchmarks
 {
-    [MemoryDiagnoser]
-    public class SfHashSetBenchmarks
+    [Params(10_000, 100_000)] 
+    public int Size;
+
+    private HashSet<int> _sysSet;
+    private SfHashSet<int> _sfSet;
+    
+    private int[] _data;
+    private int[] _missData;
+
+    [GlobalSetup]
+    public void Setup()
     {
-        private const int N = 1000000;
-        private HashSet<int> _systemSet;
-        private SfHashSet<int> _sfSet;
+        var rnd = new Random(42);
+        
+        _data = new int[Size];
+        _missData = new int[Size];
+        
+        _sysSet = new HashSet<int>();
+        _sfSet = new SfHashSet<int>();
 
-        [GlobalSetup]
-        public void Setup()
+        for (int i = 0; i < Size; i++)
         {
-            _systemSet = new HashSet<int>(N);
-            _sfSet = new SfHashSet<int>(N);
+            _data[i] = rnd.Next(); 
         }
 
-        [Benchmark(Baseline = true)]
-        public void SystemHashSet_AddContainsRemove()
+        for (int i = 0; i < Size; i++)
         {
-            var set = _systemSet;
-            set.Clear();
-
-            bool dummy = false;
-            for (int i = 0; i < N; i++)
-            {
-                set.Add(i);
-                dummy |= set.Contains(i);
-                set.Remove(i);
-            }
-
+            int val = rnd.Next();
+            while (_data.Contains(val)) val = rnd.Next();
+            _missData[i] = val;
         }
 
-        [Benchmark]
-        public void SfHashSet_AddContainsRemove()
+        foreach (var item in _data)
         {
-            var set = _sfSet;
-            set.Clear();
-
-            bool dummy = false;
-            for (int i = 0; i < N; i++)
-            {
-                set.Add(i);
-                dummy |= set.Contains(i);
-                set.Remove(i);
-            }
+            _sysSet.Add(item);
+            _sfSet.TryAdd(item);
         }
+    }
+    
+    
+    [Benchmark(Baseline = true)]
+    public void System_Add()
+    {
+        _sysSet.Clear(); 
+        foreach (var item in _data)
+        {
+            _sysSet.Add(item);
+        }
+    }
+
+    [Benchmark]
+    public void Sf_Add()
+    {
+        _sfSet.Clear();
+        foreach (var item in _data)
+        {
+            _sfSet.TryAdd(item);
+        }
+    }
+    
+
+    [Benchmark]
+    public int System_Contains_Hit()
+    {
+        int found = 0;
+        foreach (var item in _data)
+        {
+            if (_sysSet.Contains(item)) found++;
+        }
+        return found;
+    }
+
+    [Benchmark]
+    public int Sf_Contains_Hit()
+    {
+        int found = 0;
+        foreach (var item in _data)
+        {
+            if (_sfSet.Contains(item)) found++;
+        }
+        return found;
+    }
+
+    [Benchmark]
+    public int System_Contains_Miss()
+    {
+        int found = 0;
+        foreach (var item in _missData)
+        {
+            if (_sysSet.Contains(item)) found++;
+        }
+        return found;
+    }
+
+    [Benchmark]
+    public int Sf_Contains_Miss()
+    {
+        int found = 0;
+        foreach (var item in _missData)
+        {
+            if (_sfSet.Contains(item)) found++;
+        }
+        return found;
+    }
+    
+    [Benchmark]
+    public int System_Foreach()
+    {
+        int sum = 0;
+        foreach (var item in _sysSet) sum += item;
+        return sum;
+    }
+
+    [Benchmark]
+    public int Sf_Foreach()
+    {
+        int sum = 0;
+        foreach (var item in _sfSet) sum += item;
+        return sum;
     }
 }

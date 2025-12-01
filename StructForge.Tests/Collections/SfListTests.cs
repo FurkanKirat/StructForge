@@ -1,13 +1,21 @@
 ﻿using StructForge.Collections;
+using Xunit.Abstractions;
 
 namespace StructForge.Tests.Collections
 {
     public class SfListTests
     {
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public SfListTests(ITestOutputHelper testOutputHelper)
+        {
+            _testOutputHelper = testOutputHelper;
+        }
+
         [Fact]
         public void Add_IncreasesCount()
         {
-            ISfList<int> list = new SfList<int>();
+            var list = new SfList<int>();
             list.Add(1);
             list.Add(2);
 
@@ -299,6 +307,29 @@ namespace StructForge.Tests.Collections
             list.ForEach(x => sum += x);
 
             Assert.Equal(6, sum);
+        }
+        
+        [Fact]
+        public void EnumeratorAllocationTest()
+        {
+            var myList = new SfList<int>();
+            for (int i = 0; i < 1000; i++) myList.Add(i);
+
+            foreach (var item in myList) { }
+            
+            long startBytes = GC.GetAllocatedBytesForCurrentThread();
+
+            int total = 0;
+            foreach (var item in myList)
+            {
+                total += item;
+            }
+
+            long endBytes = GC.GetAllocatedBytesForCurrentThread();
+            long allocated = endBytes - startBytes;
+            
+            Assert.True(total > 0);
+            Assert.Equal(0, allocated);
         }
     }
 }

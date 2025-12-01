@@ -13,7 +13,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void MaxHeap_AddAndPop_ShouldMaintainMaxHeapProperty()
     {
-        var heap = new SfMaxHeap<int>();
+        var heap = SfBinaryHeap<int>.CreateMaxHeap();
 
         int[] values = { 20, 5, 30, 15, 40, 10 };
         foreach (var v in values)
@@ -31,7 +31,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void MinHeap_AddAndPop_ShouldMaintainMinHeapProperty()
     {
-        var heap = new SfMinHeap<int>();
+        var heap = new SfBinaryHeap<int>();
 
         int[] values = { 20, 5, 30, 15, 40, 10 };
         foreach (var v in values)
@@ -49,7 +49,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void Heap_ShouldHandleDuplicateValuesCorrectly()
     {
-        var heap = new SfMaxHeap<int>();
+        var heap = SfBinaryHeap<int>.CreateMaxHeap();
         int[] values = { 5, 10, 10, 20, 20, 20 };
         foreach (var v in values)
             heap.Add(v);
@@ -67,20 +67,20 @@ public class SfBinaryHeapTests
     public void Heap_ConstructorWithEnumerable_ShouldBuildCorrectHeap()
     {
         int[] initial = { 15, 5, 20, 10, 30 };
-        var heap = new SfMaxHeap<int>(initial);
+        var heap = new SfBinaryHeap<int>(initial);
 
         int[] popped = new int[initial.Length];
         for (int i = 0; i < initial.Length; i++)
             popped[i] = heap.Pop();
 
-        var sorted = initial.OrderByDescending(x => x).ToArray();
+        var sorted = initial.OrderBy(x => x).ToArray();
         Assert.Equal(sorted, popped);
     }
 
     [Fact]
     public void Peek_ShouldAlwaysReturnRootWithoutRemoving()
     {
-        var heap = new SfMaxHeap<int>();
+        var heap = SfBinaryHeap<int>.CreateMaxHeap();
         heap.Add(10);
         heap.Add(20);
         heap.Add(5);
@@ -97,7 +97,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void Contains_ShouldReturnCorrectValues()
     {
-        var heap = new SfMinHeap<int>();
+        var heap = new SfBinaryHeap<int>();
         heap.Add(10);
         heap.Add(20);
         heap.Add(5);
@@ -110,7 +110,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void Pop_OnEmptyHeap_ShouldThrow()
     {
-        var heap = new SfMaxHeap<int>();
+        var heap = new SfBinaryHeap<int>();
         Assert.Throws<InvalidOperationException>(() => heap.Pop());
     }
 
@@ -118,7 +118,7 @@ public class SfBinaryHeapTests
     public void BulkRandomInsertions_ShouldMaintainHeapProperty()
     {
         var rnd = new Random();
-        var heap = new SfMaxHeap<int>();
+        var heap = SfBinaryHeap<int>.CreateMaxHeap();
         int[] nums = Enumerable.Range(1, 1000).Select(_ => rnd.Next(1, 5000)).ToArray();
 
         foreach (var n in nums)
@@ -133,12 +133,10 @@ public class SfBinaryHeapTests
         }
     }
     
-    record Entity(string Name, int Priority);
-
     [Fact]
     public void MaxHeap_Test()
     {
-        var heap = new SfMaxHeap<int>();
+        var heap = SfBinaryHeap<int>.CreateMaxHeap();
         heap.Add(5);
         heap.Add(10);
         heap.Add(3);
@@ -152,7 +150,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void MinHeap_Test()
     {
-        var heap = new SfMinHeap<int>();
+        var heap = new SfBinaryHeap<int>();
         heap.Add(5);
         heap.Add(10);
         heap.Add(3);
@@ -166,7 +164,7 @@ public class SfBinaryHeapTests
     [Fact]
     public void MaxHeap_WithCustomComparer_Test()
     {
-        var heap = new SfMaxHeap<int>(comparer:SfComparers<int>.DefaultComparer);
+        var heap = new SfBinaryHeap<int>(comparer:SfComparers<int>.ReverseComparer);
         heap.Add(1);
         heap.Add(100);
         heap.Add(50);
@@ -175,24 +173,11 @@ public class SfBinaryHeapTests
         Assert.Equal(50, heap.Pop());
         Assert.Equal(1, heap.Pop());
     }
-
-    [Fact]
-    public void Heap_WithEntities_KeySelector_Test()
-    {
-        var heap = new SfMaxHeap<Entity>(comparer:SfComparers<Entity>.FromSelector<int>(e => e.Priority));
-        heap.Add(new Entity("Goblin", 5));
-        heap.Add(new Entity("Dragon", 10));
-        heap.Add(new Entity("Slime", 2));
-
-        Assert.Equal("Dragon", heap.Pop().Name);
-        Assert.Equal("Goblin", heap.Pop().Name);
-        Assert.Equal("Slime", heap.Pop().Name);
-    }
-
+    
     [Fact]
     public void PriorityQueue_MinHeap_Test()
     {
-        var pq = new SfPriorityQueue<string, int>(minHeap: true);
+        var pq = new SfPriorityQueue<string, int>();
         pq.Enqueue("Low", 1);
         pq.Enqueue("Medium", 5);
         pq.Enqueue("High", 10);

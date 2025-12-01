@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Enumerators;
 using StructForge.Helpers;
 
 namespace StructForge.Collections
@@ -12,29 +13,47 @@ namespace StructForge.Collections
     /// Provides fast indexed access and efficient memory layout for 2D data structures.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the grid.</typeparam>
-    public class SfGrid2D<T> : ISfDataStructure<T>
+    public sealed class SfGrid2D<T> : ISfDataStructure<T>
     {
+        private readonly int _width, _height;
+
+        /// <summary>
+        /// The underlying linear array that stores the 2D grid data.
+        /// </summary>
+        private T[] _buffer;
+        
         /// <summary>
         /// Gets the width (X dimension) of the grid.
         /// </summary>
-        public int Width { get; }
+        public int Width
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _width;
+        }
         
         /// <summary>
         /// Gets the height (Y dimension) of the grid.
         /// </summary>
-        public int Height { get; }
+        public int Height
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _height;
+        }
         
         /// <inheritdoc/>
-        public int Count => Data.Length;
-        
-        /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
-        
-        /// <summary>
-        /// The underlying linear array that stores the 2D grid data.
-        /// </summary>
-        private T[] Data { get; }
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _buffer.Length;
+        }
 
+        /// <inheritdoc/>
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Count == 0;
+        }
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SfGrid2D{T}"/> class with the specified dimensions.
         /// </summary>
@@ -45,12 +64,14 @@ namespace StructForge.Collections
         /// </exception>
         public SfGrid2D(int width, int height)
         {
-            SfThrowHelper.ThrowIfNonPositive(width, nameof(width));
-            SfThrowHelper.ThrowIfNonPositive(height, nameof(height));
+            if (width <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(width));
+            if (height <= 0)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(height));
 
-            Width = width;
-            Height = height;
-            Data = new T[width * height];
+            _width = width;
+            _height = height;
+            _buffer = new T[width * height];
         }
 
         /// <summary>
@@ -58,24 +79,28 @@ namespace StructForge.Collections
         /// </summary>
         /// <param name="width">The width (X dimension) of the grid. Must be positive.</param>
         /// <param name="height">The height (Y dimension) of the grid. Must be positive.</param>
-        /// <param name="data">The backing array containing the grid data. Length must equal width × height.</param>
+        /// <param name="buffer">The backing array containing the grid data. Length must equal width × height.</param>
         /// <exception cref="ArgumentOutOfRangeException">
         /// Thrown when <paramref name="width"/> or <paramref name="height"/> is less than or equal to zero.
         /// </exception>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="data"/> is null.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="buffer"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the data array length does not match width × height.</exception>
-        public SfGrid2D(int width, int height, T[] data)
+        public SfGrid2D(int width, int height, T[] buffer)
         {
-            SfThrowHelper.ThrowIfNonPositive(width, nameof(width));
-            SfThrowHelper.ThrowIfNonPositive(height, nameof(height));
-            SfThrowHelper.ThrowIfNull(data, nameof(data));
-
-            Width = width;
-            Height = height;
-            Data = data;
+            if (width <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(width));
+            if (height <= 0)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(height));
             
-            if (Width * Height != data.Length)
-                throw new ArgumentException($"{nameof(data)} must have the same size as {nameof(Width)}x{nameof(Height)}({Width}, {Height})");
+            if (buffer is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(buffer));
+
+            _width = width;
+            _height = height;
+            _buffer = buffer;
+            
+            if (_width * _height != buffer.Length)
+                SfThrowHelper.ThrowArgument($"{nameof(buffer)} must have the same size as {nameof(Width)}x{nameof(Height)}({_width}, {_height})");
         }
 
         /// <summary>
@@ -85,13 +110,14 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public SfGrid2D(SfGrid2D<T> other)
         {
-            SfThrowHelper.ThrowIfNull(other, nameof(other));
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
             
-            Width = other.Width;
-            Height = other.Height;
-            Data = new T[Width * Height];
+            _width = other._width;
+            _height = other._height;
+            _buffer = new T[_width * _height];
             
-            Array.Copy(other.Data, 0, Data, 0, Data.Length);
+            Array.Copy(other._buffer, 0, _buffer, 0, _buffer.Length);
         }
         
         /// <summary>
@@ -103,8 +129,8 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
         public T this[int x, int y]
         {
-            get => Data[CheckedIndex(x, y)];
-            set => Data[CheckedIndex(x, y)] = value;
+            get => _buffer[CheckedIndex(x, y)];
+            set => _buffer[CheckedIndex(x, y)] = value;
         }
 
         /// <summary>
@@ -115,8 +141,8 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the valid bounds.</exception>
         public T this[int index]
         {
-            get => Data[CheckedIndex(index)];
-            set => Data[CheckedIndex(index)] = value;
+            get => _buffer[CheckedIndex(index)];
+            set => _buffer[CheckedIndex(index)] = value;
         }
 
         /// <summary>
@@ -130,7 +156,7 @@ namespace StructForge.Collections
         {
             if (IsInBounds(x, y))
             {
-                value = Data[ToIndex(x, y)];
+                value = _buffer[ToIndex(x, y)];
                 return true;
             }
 
@@ -143,7 +169,14 @@ namespace StructForge.Collections
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] GetRawData() => Data;
+        public T[] GetRawData() => _buffer;
+        
+        /// <summary>
+        /// Returns the underlying data array as span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan() => _buffer.AsSpan();
 
         /// <summary>
         /// Returns an unsafe reference to the element at the specified 2D coordinate without bounds checking.
@@ -154,7 +187,7 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T GetUnsafeRef(int x, int y)
         {
-            return ref Data[y * Width + x];
+            return ref _buffer[y * _width + x];
         }
         
         /// <summary>
@@ -166,7 +199,7 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetUnchecked(int x, int y, T value)
         {
-            Data[y * Width + x] = value;
+            _buffer[y * _width + x] = value;
         }
 
         /// <summary>
@@ -176,7 +209,7 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <returns>The linear index in the backing array.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ToIndex(int x, int y) => y * Width + x;
+        public int ToIndex(int x, int y) => y * _width + x;
         
         /// <summary>
         /// Converts 2D coordinates to a linear array index with bounds checking.
@@ -187,7 +220,8 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int CheckedIndex(int x, int y) {
-            if (!IsInBounds(x, y)) throw new ArgumentOutOfRangeException();
+            if (!IsInBounds(x, y)) 
+                SfThrowHelper.ThrowArgumentOutOfRange("index", "index is out of range.");
             return ToIndex(x, y);
         }
         
@@ -200,7 +234,8 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int CheckedIndex(int index)
         {
-            if (!IsInBounds(index)) throw new ArgumentOutOfRangeException();
+            if (!IsInBounds(index)) 
+                SfThrowHelper.ThrowArgumentOutOfRange("index", "index is out of range.");
             return index;
         }
 
@@ -210,7 +245,7 @@ namespace StructForge.Collections
         /// <param name="index">The linear index in the backing array.</param>
         /// <returns>A tuple containing the (x, y) coordinates.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (int x, int y) ToCoords(int index) => (index % Width, index / Width);
+        public (int x, int y) ToCoords(int index) => (index % _width, index / _width);
 
         /// <summary>
         /// Determines whether the specified 2D coordinates are within the grid bounds.
@@ -219,7 +254,7 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <returns><c>true</c> if the coordinates are within bounds; otherwise, <c>false</c>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsInBounds(int x, int y) => x >= 0 && x < Width && y >= 0 && y < Height;
+        public bool IsInBounds(int x, int y) => (uint)x < _width && (uint)y < _height;
         
         /// <summary>
         /// Determines whether the specified linear index is within the grid bounds.
@@ -227,7 +262,7 @@ namespace StructForge.Collections
         /// <param name="index">The linear index to check.</param>
         /// <returns><c>true</c> if the index is within bounds; otherwise, <c>false</c>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsInBounds(int index) => index >= 0 && index < Data.Length;
+        public bool IsInBounds(int index) => (uint)index < _buffer.Length;
         
         /// <summary>
         /// Fills the entire grid with the specified value.
@@ -235,8 +270,8 @@ namespace StructForge.Collections
         /// <param name="value">The value to fill the grid with.</param>
         public void Fill(T value)
         {
-            for (int i = 0; i < Data.Length; i++)
-                Data[i] = value;
+            for (int i = 0; i < _buffer.Length; i++)
+                _buffer[i] = value;
         }
         
         /// <inheritdoc/>
@@ -244,7 +279,7 @@ namespace StructForge.Collections
         {
             for (int i = 0; i < Count; i++)
             {
-                action(Data[i]);
+                action(_buffer[i]);
             }
         }
 
@@ -256,7 +291,7 @@ namespace StructForge.Collections
         {
             for (int i = 0; i < Count; i++)
             {
-                if (comparer.Equals(Data[i], item))
+                if (comparer.Equals(_buffer[i], item))
                     return true;
             }
 
@@ -266,30 +301,34 @@ namespace StructForge.Collections
         /// <summary>
         /// Clears all elements in the grid (sets them to their default value).
         /// </summary>
-        public void Clear() => Array.Clear(Data, 0, Data.Length);
+        public void Clear() => Array.Clear(_buffer, 0, _buffer.Length);
 
         /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null)
-                throw new ArgumentNullException(nameof(array));
+            if (array is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(array));
             if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (arrayIndex + Count > array.Length)
-                throw new ArgumentException("Destination array is not large enough.");
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(arrayIndex));
+            if (arrayIndex + Count > array.Length) 
+                SfThrowHelper.ThrowArgument("Destination array is not large enough.");
 
             for (int i = 0; i < Count; i++)
-                array[arrayIndex++] = Data[i];
+                array[arrayIndex++] = _buffer[i];
         }
 
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator()
+        public T[] ToArray()
         {
-            for (int i = 0; i < Count; i++)
-            {
-                yield return Data[i];
-            }
+            T[] arr = new T[Count];
+            CopyTo(arr, 0);
+            return arr;
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _buffer.Length);
+        /// <inheritdoc/>
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

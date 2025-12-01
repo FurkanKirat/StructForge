@@ -10,8 +10,9 @@ namespace StructForge.Collections
     /// Represents a two-dimensional bit array backed by a linear <see cref="SfBitArray"/>.
     /// Provides fast indexed access and efficient bitwise operations in 2D form.
     /// </summary>
-    public class SfBitArray2D : ISfDataStructure<bool>
+    public sealed class SfBitArray2D : ISfDataStructure<bool>
     {
+        private readonly int _width, _height;
         /// <summary>
         /// The underlying linear bit array that stores the 2D data.
         /// </summary>
@@ -20,18 +21,34 @@ namespace StructForge.Collections
         /// <summary>
         /// Gets the width (X dimension) of the bit array.
         /// </summary>
-        public int Width { get; }
+        public int Width
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _width;
+        }
 
         /// <summary>
         /// Gets the height (Y dimension) of the bit array.
         /// </summary>
-        public int Height { get; }
+        public int Height
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _height;
+        }
 
         /// <inheritdoc/>
-        public int Count => _buffer.Count;
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _buffer.Count;
+        }
 
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Count == 0; 
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SfBitArray2D"/> class with the specified dimensions.
@@ -43,11 +60,14 @@ namespace StructForge.Collections
         /// </exception>
         public SfBitArray2D(int width, int height)
         {
-            SfThrowHelper.ThrowIfNonPositive(width, nameof(width));
-            SfThrowHelper.ThrowIfNonPositive(height, nameof(height));
+            if (width <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(width));
+            
+            if (height <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(height));
 
-            Width = width;
-            Height = height;
+            _width = width;
+            _height = height;
             _buffer = new SfBitArray(width * height);
         }
 
@@ -58,9 +78,11 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         public SfBitArray2D(SfBitArray2D other)
         {
-            SfThrowHelper.ThrowIfNull(other, nameof(other));
-            Width = other.Width;
-            Height = other.Height;
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+
+            _width = other._width;
+            _height = other._height;
             _buffer = new SfBitArray(other._buffer);
         }
 
@@ -76,19 +98,23 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="width"/> or <paramref name="height"/> is non-positive.</exception>
         public SfBitArray2D(int width, int height, ulong[] bits)
         {
-            SfThrowHelper.ThrowIfNull(bits, nameof(bits));
-            SfThrowHelper.ThrowIfNonPositive(width, nameof(width));
-            SfThrowHelper.ThrowIfNonPositive(height, nameof(height));
+            if (bits is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(bits));
+            
+            if (width <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(width));
+            if (height <= 0) 
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(height));
 
             int totalBits = width * height;
             int requiredUlongs = (totalBits + 63) / 64;
 
             if (bits.Length != requiredUlongs)
-                throw new ArgumentException(
+                SfThrowHelper.ThrowArgument(
                     $"Invalid backing buffer size. Expected {requiredUlongs}, got {bits.Length}.");
 
-            Width = width;
-            Height = height;
+            _width = width;
+            _height = height;
             _buffer = new SfBitArray(bits, totalBits);
         }
 
@@ -106,15 +132,26 @@ namespace StructForge.Collections
         /// <returns>The linear index in the backing buffer.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int Index(int x, int y)
+        public int IndexSafe(int x, int y)
         {
-            if (x < 0 || x >= Width)
-                throw new ArgumentOutOfRangeException(nameof(x));
-            if (y < 0 || y >= Height)
-                throw new ArgumentOutOfRangeException(nameof(y));
+            if ((uint)x >= (uint)_width)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(x));
+            if ((uint)y >= (uint)_height)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(y));
 
-            return y * Width + x;
+            return y * _width + x;
         }
+        
+        /// <summary>
+        /// Calculates the linear bit index corresponding to a 2D coordinate without index check.
+        /// </summary>
+        /// <param name="x">The X coordinate (column index).</param>
+        /// <param name="y">The Y coordinate (row index).</param>
+        /// <returns>The linear index in the backing buffer.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int IndexUnsafe(int x, int y) => y * _width + x;
+        
 
         /// <summary>
         /// Gets or sets the bit value at the specified 2D coordinate.
@@ -125,12 +162,32 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
         public bool this[int x, int y]
         {
-            get => _buffer[Index(x, y)];
-            set => _buffer[Index(x, y)] = value;
+            get => _buffer[IndexSafe(x, y)];
+            set => _buffer[IndexSafe(x, y)] = value;
         }
 
+        /// <summary>
+        /// Returns the bit value at the specified index without bounds checking.
+        /// </summary>
+        /// <param name="x">The X coordinate (column index).</param>
+        /// <param name="y">The Y coordinate (row index).</param>
+        /// <returns>The boolean value at the specified index.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool GetUnchecked(int x, int y) => _buffer.GetUnchecked(IndexUnsafe(x,y));
+        
+        /// <summary>
+        /// Sets the bit value at the specified index without bounds checking.
+        /// </summary>
+        /// <param name="x">The X coordinate (column index).</param>
+        /// <param name="y">The Y coordinate (row index).</param>
+        /// <param name="value">The value to set.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetUnchecked(int x, int y, bool value) => _buffer.SetUnchecked(IndexUnsafe(x,y), value);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfBitArray.SfBitArrayEnumerator GetEnumerator() => new(_buffer);
         /// <inheritdoc/>
-        public IEnumerator<bool> GetEnumerator() => _buffer.GetEnumerator();
+        IEnumerator<bool> IEnumerable<bool>.GetEnumerator() => _buffer.GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -151,6 +208,14 @@ namespace StructForge.Collections
 
         /// <inheritdoc/>
         public void CopyTo(bool[] array, int arrayIndex) => _buffer.CopyTo(array, arrayIndex);
+
+        /// <inheritdoc/>
+        public bool[] ToArray()
+        {
+            bool[] arr = new bool[Count];
+            CopyTo(arr, 0);
+            return arr;
+        }
 
         /// <summary>
         /// Sets all bits in the array to the specified value.
@@ -176,7 +241,7 @@ namespace StructForge.Collections
         /// <param name="x">The X coordinate (column index).</param>
         /// <param name="y">The Y coordinate (row index).</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
-        public void Toggle(int x, int y) => _buffer.Toggle(Index(x, y));
+        public void Toggle(int x, int y) => _buffer.Toggle(IndexSafe(x, y));
 
         /// <summary>
         /// Inverts all bits in the array (true becomes false, false becomes true).
@@ -192,10 +257,11 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
         public void And(SfBitArray2D other)
         {
-            SfThrowHelper.ThrowIfNull(other, nameof(other));
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
 
-            if (Width != other.Width || Height != other.Height)
-                throw new ArgumentException("BitArray2D sizes must match.");
+            if (_width != other._width || _height != other._height)
+                SfThrowHelper.ThrowArgument("BitArray2D sizes must match.");
 
             _buffer.And(other._buffer);
         }
@@ -209,10 +275,11 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
         public void Or(SfBitArray2D other)
         {
-            SfThrowHelper.ThrowIfNull(other, nameof(other));
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
 
-            if (Width != other.Width || Height != other.Height)
-                throw new ArgumentException("BitArray2D sizes must match.");
+            if (_width != other._width || _height != other._height)
+                SfThrowHelper.ThrowArgument("BitArray2D sizes must match.");
 
             _buffer.Or(other._buffer);
         }
@@ -226,10 +293,11 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
         public void Xor(SfBitArray2D other)
         {
-            SfThrowHelper.ThrowIfNull(other, nameof(other));
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
 
-            if (Width != other.Width || Height != other.Height)
-                throw new ArgumentException("BitArray2D sizes must match.");
+            if (_width != other._width || _height != other._height)
+                SfThrowHelper.ThrowArgument("BitArray2D sizes must match.");
 
             _buffer.Xor(other._buffer);
         }

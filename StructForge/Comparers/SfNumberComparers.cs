@@ -1,61 +1,137 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace StructForge.Comparers
 {
     /// <summary>
-    /// Provides numeric comparers for common number types
-    /// such as <see cref="double"/>, <see cref="float"/>, <see cref="int"/>, and <see cref="long"/>.
-    /// Includes absolute value and sign-based comparisons.
+    /// Provides high-performance numeric comparers for common types.
+    /// Uses "Backing Field + Inlined Property" pattern to eliminate access overhead.
     /// </summary>
     public static class SfNumberComparers
     {
-        /// <summary>
-        /// Compares two <see cref="double"/> values by their absolute values.
-        /// </summary>
-        public static IComparer<double> DoubleAbsolute { get; } =
-            Comparer<double>.Create((a, b) => Math.Abs(a).CompareTo(Math.Abs(b)));
+        // ============================================================
+        // INT (Int32)
+        // ============================================================
+        
+        private static readonly IComparer<int> _intAbsolute = new SfIntAbsComparer();
+        private static readonly IComparer<int> _intSign = new SfIntSignComparer();
 
-        /// <summary>
-        /// Compares two <see cref="double"/> values by their signs (-1, 0, 1).
-        /// </summary>
-        public static IComparer<double> DoubleSignComparer { get; } =
-            Comparer<double>.Create((a, b) => Math.Sign(a).CompareTo(Math.Sign(b)));
+        public static IComparer<int> IntAbsolute
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _intAbsolute;
+        }
 
-        /// <summary>
-        /// Compares two <see cref="float"/> values by their absolute values.
-        /// </summary>
-        public static IComparer<float> FloatAbsolute { get; } =
-            Comparer<float>.Create((a, b) => Math.Abs(a).CompareTo(Math.Abs(b)));
+        public static IComparer<int> IntSign
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _intSign;
+        }
 
-        /// <summary>
-        /// Compares two <see cref="float"/> values by their signs (-1, 0, 1).
-        /// </summary>
-        public static IComparer<float> FloatSignComparer { get; } =
-            Comparer<float>.Create((a, b) => Math.Sign(a).CompareTo(Math.Sign(b)));
+        private sealed class SfIntAbsComparer : IComparer<int>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(int x, int y) => Math.Abs(x).CompareTo(Math.Abs(y));
+        }
 
-        /// <summary>
-        /// Compares two <see cref="int"/> values by their absolute values.
-        /// </summary>
-        public static IComparer<int> IntAbsolute { get; } =
-            Comparer<int>.Create((a, b) => Math.Abs(a).CompareTo(Math.Abs(b)));
+        private sealed class SfIntSignComparer : IComparer<int>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(int x, int y) => Math.Sign(x).CompareTo(Math.Sign(y));
+        }
 
-        /// <summary>
-        /// Compares two <see cref="int"/> values by their signs (-1, 0, 1).
-        /// </summary>
-        public static IComparer<int> IntSignComparer { get; } =
-            Comparer<int>.Create((a, b) => Math.Sign(a).CompareTo(Math.Sign(b)));
+        // ============================================================
+        // DOUBLE
+        // ============================================================
 
-        /// <summary>
-        /// Compares two <see cref="long"/> values by their absolute values.
-        /// </summary>
-        public static IComparer<long> LongAbsolute { get; } =
-            Comparer<long>.Create((a, b) => Math.Abs(a).CompareTo(Math.Abs(b)));
+        private static readonly IComparer<double> _doubleAbsolute = new SfDoubleAbsComparer();
+        private static readonly IComparer<double> _doubleSign = new SfDoubleSignComparer();
 
-        /// <summary>
-        /// Compares two <see cref="long"/> values by their signs (-1, 0, 1).
-        /// </summary>
-        public static IComparer<long> LongSignComparer { get; } =
-            Comparer<long>.Create((a, b) => Math.Sign(a).CompareTo(Math.Sign(b)));
+        public static IComparer<double> DoubleAbsolute
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _doubleAbsolute;
+        }
+
+        public static IComparer<double> DoubleSign
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _doubleSign;
+        }
+
+        private sealed class SfDoubleAbsComparer : IComparer<double>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(double x, double y) => Math.Abs(x).CompareTo(Math.Abs(y));
+        }
+
+        private sealed class SfDoubleSignComparer : IComparer<double>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(double x, double y) => Math.Sign(x).CompareTo(Math.Sign(y));
+        }
+
+        // ============================================================
+        // FLOAT (Single)
+        // ============================================================
+
+        private static readonly IComparer<float> _floatAbsolute = new SfFloatAbsComparer();
+        private static readonly IComparer<float> _floatSign = new SfFloatSignComparer();
+
+        public static IComparer<float> FloatAbsolute
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _floatAbsolute;
+        }
+
+        public static IComparer<float> FloatSign
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _floatSign;
+        }
+
+        private sealed class SfFloatAbsComparer : IComparer<float>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(float x, float y) => Math.Abs(x).CompareTo(Math.Abs(y));
+        }
+
+        private sealed class SfFloatSignComparer : IComparer<float>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(float x, float y) => Math.Sign(x).CompareTo(Math.Sign(y));
+        }
+
+        // ============================================================
+        // LONG (Int64)
+        // ============================================================
+
+        private static readonly IComparer<long> _longAbsolute = new SfLongAbsComparer();
+        private static readonly IComparer<long> _longSign = new SfLongSignComparer();
+
+        public static IComparer<long> LongAbsolute
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _longAbsolute;
+        }
+
+        public static IComparer<long> LongSign
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _longSign;
+        }
+
+        private sealed class SfLongAbsComparer : IComparer<long>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(long x, long y) => Math.Abs(x).CompareTo(Math.Abs(y));
+        }
+
+        private sealed class SfLongSignComparer : IComparer<long>
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public int Compare(long x, long y) => Math.Sign(x).CompareTo(Math.Sign(y));
+        }
     }
 }

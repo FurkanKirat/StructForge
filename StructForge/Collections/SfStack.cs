@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Enumerators;
 using StructForge.Helpers;
 
 namespace StructForge.Collections
@@ -10,20 +12,32 @@ namespace StructForge.Collections
     /// Represents a last-in-first-out (LIFO) stack of objects.
     /// </summary>
     /// <typeparam name="T">The type of elements in the stack.</typeparam>
-    public class SfStack<T> : ISfStack<T>
+    public sealed class SfStack<T> : ISfDataStructure<T>
     {
-        private readonly SfList<T> _data;
+        private readonly SfList<T> _buffer;
 
         /// <inheritdoc/>
-        public int Count => _data.Count;
+        public int Count
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _buffer.Count;
+        }
 
         /// <summary>
         /// Gets the total capacity of the underlying array.
         /// </summary>
-        public int Capacity => _data.Capacity;
+        public int Capacity
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _buffer.Capacity;
+        }
 
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => Count == 0;
+        }
 
         #region Constructors
         
@@ -36,7 +50,7 @@ namespace StructForge.Collections
             int capacity = SfList<T>.DefaultCapacity, 
             float growthFactor = SfList<T>.DefaultGrowthFactor)
         {
-            _data = new SfList<T>(capacity, growthFactor);
+            _buffer = new SfList<T>(capacity, growthFactor);
         }
 
         /// <summary>
@@ -47,8 +61,10 @@ namespace StructForge.Collections
             int extraCapacity = 0, 
             float growthFactor = SfList<T>.DefaultGrowthFactor)
         {
-            SfThrowHelper.ThrowIfNull(collection);
-            _data = new SfList<T>(collection, extraCapacity, growthFactor);
+            if (collection is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(collection));
+            
+            _buffer = new SfList<T>(collection, extraCapacity, growthFactor);
         }
         
         /// <summary>
@@ -57,32 +73,29 @@ namespace StructForge.Collections
         /// <param name="other">Source Stack</param>
         public SfStack(SfStack<T> other)
         {
-            _data = new SfList<T>(other._data);
+            _buffer = new SfList<T>(other._buffer);
         }
         #endregion
 
         #region IDataStructure<T> Implementation
 
         /// <inheritdoc/>
-        public bool Contains(T item, IEqualityComparer<T> comparer) => _data.Contains(item, comparer);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Contains(T item, IEqualityComparer<T> comparer) => _buffer.Contains(item, comparer);
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
 
         /// <inheritdoc/>
-        public void ForEach(Action<T> action)
-        {
-            _data.ForEach(action);
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ForEach(Action<T> action) => _buffer.ForEach(action);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfReverseArrayEnumerator<T> GetEnumerator() => _buffer.GetReverseEnumerator();
+        
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator()
-        {
-            for (int i = Count - 1; i >= 0; i--)
-            {
-                yield return _data[i];
-            }
-        }
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -90,49 +103,78 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) throw new ArgumentNullException(nameof(array));
-            if (arrayIndex < 0) throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (arrayIndex + Count > array.Length) throw new ArgumentException("Destination array too small");
-
+            if (array is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(array));
+            if (arrayIndex < 0)
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(arrayIndex));
+            if (arrayIndex + Count > array.Length) 
+                SfThrowHelper.ThrowArgument("Destination array is not large enough.");
+            
             for (int i = 0; i < Count; i++)
-                array[arrayIndex + i] = _data[Count - 1 - i];
+                array[arrayIndex + i] = _buffer[Count - 1 - i];
+        }
+
+        /// <inheritdoc/>
+        public T[] ToArray()
+        {
+            T[] arr = new T[Count];
+            CopyTo(arr, 0);
+            return arr;
         }
 
         /// <inheritdoc/>
         public void Clear()
         {
-            _data.Clear();
+            _buffer.Clear();
         }
         
         #endregion
 
         #region Stack Operations
 
-        /// <inheritdoc/>
-        public void Push(T item)
-        {
-            _data.Add(item);
-        }
+        /// <summary>
+        /// Inserts an item at the top of the stack.
+        /// </summary>
+        /// <param name="item">The item to push onto the stack.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Push(T item) => _buffer.Add(item);
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Removes and returns the item at the top of the stack.
+        /// </summary>
+        /// <returns>The item removed from the top of the stack.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Pop()
         {
             if (TryPop(out T item))
                 return item;
-
-            throw new InvalidOperationException("Stack is empty");
+            
+            SfThrowHelper.ThrowInvalidOperation("Stack is empty");
+            return default;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns the item at the top of the stack without removing it.
+        /// </summary>
+        /// <returns>The item at the top of the stack.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if the stack is empty.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek()
         {
             if (TryPeek(out T item))
                 return item;
-
-            throw new InvalidOperationException("Stack is empty");
+            
+            SfThrowHelper.ThrowInvalidOperation("Stack is empty");
+            return default;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Attempts to remove and return the item at the top of the stack.
+        /// </summary>
+        /// <param name="item">When this method returns, contains the object removed, if successful; otherwise, the default value of T.</param>
+        /// <returns>True if an item was removed; false if the stack was empty.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPop(out T item)
         {
             if (IsEmpty)
@@ -142,12 +184,17 @@ namespace StructForge.Collections
             }
 
             int lastIndex = Count - 1;
-            item = _data.Last;
-            _data.RemoveAt(lastIndex);
+            item = _buffer.Last;
+            _buffer.RemoveAt(lastIndex);
             return true;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Attempts to return the item at the top of the stack without removing it.
+        /// </summary>
+        /// <param name="item">When this method returns, contains the object at the top, if successful; otherwise, the default value of T.</param>
+        /// <returns>True if an item was retrieved; false if the stack was empty.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPeek(out T item)
         {
             if (IsEmpty)
@@ -156,16 +203,17 @@ namespace StructForge.Collections
                 return false;
             }
 
-            item = _data.Last;
+            item = _buffer.Last;
             return true;
         }
 
         /// <summary>
         /// Reduces the capacity to fit the current count.
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TrimExcess()
         {
-            _data.TrimExcess();
+            _buffer.TrimExcess();
         }
 
         #endregion

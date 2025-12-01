@@ -37,11 +37,11 @@ public class SfBitArray3DTests
     {
         var arr = new SfBitArray3D(10, 10, 10);
 
-        Assert.Equal(0, arr.Index(0, 0, 0));
-        Assert.Equal(5, arr.Index(5, 0, 0));
-        Assert.Equal(10, arr.Index(0, 1, 0));
-        Assert.Equal(100, arr.Index(0, 0, 1)); // next layer
-        Assert.Equal(555, arr.Index(5, 5, 5));
+        Assert.Equal(0, arr.IndexSafe(0, 0, 0));
+        Assert.Equal(5, arr.IndexSafe(5, 0, 0));
+        Assert.Equal(10, arr.IndexSafe(0, 1, 0));
+        Assert.Equal(100, arr.IndexSafe(0, 0, 1)); // next layer
+        Assert.Equal(555, arr.IndexSafe(5, 5, 5));
     }
 
     [Fact]

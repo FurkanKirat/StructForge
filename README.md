@@ -1,215 +1,162 @@
 # StructForge
 
-[![NuGet](https://img.shields.io/nuget/v/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
+[![NuGet Version](https://img.shields.io/nuget/v/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**StructForge** is a lightweight, educational, and practical C# library for learning and experimenting with fundamental data structures and algorithms. It provides a range of generic collections, sorting algorithms, and interfaces for building your own high-level structures.
+**StructForge** is a high-performance, zero-allocation data structures library for .NET and Unity.
+
+Designed for performance-critical applications like **Game Engines**, **Real-Time Systems**, and **High-Frequency Trading**, StructForge bridges the gap between standard collections and raw memory manipulation. It focuses on **CPU cache locality**, **hardware intrinsics (SIMD)**, and **minimizing Garbage Collector (GC) pressure**.
 
 ---
 
-## Features
+## 🚀 Performance Benchmarks
 
-### Collections
+Benchmarks performed on **Intel Core i7-13650HX, .NET 8.0**.
 
-* **Lists**: `SfList<T>`, `SfLinkedList<T>`
-* **Stacks & Queues**: `SfStack<T>`, `SfQueue<T>`
-* **Heaps & Priority Queues**: `SfBinaryHeap<T>`, `SfMaxHeap<T>`, `SfMinHeap<T>`, `SfPriorityQueue<TItem, TPriority>`
-* **Binary Search Trees**: `SfBinarySearchTree<T>`
-* **Trees**: `SfBinarySearchTree<T>, SfAvlTree<T>`
-* **Sets & Dictionaries**: `SfHashSet<T>, SfDictionary<TKey, TValue>, SfSortedSet<T>, SfSortedDictionary<TKey, TValue>`
+| Data Structure   | Benchmark Scenario        | Comparison (vs .NET) | Speedup            | Memory          |
+|:-----------------|:--------------------------|:---------------------|:-------------------|:----------------|
+| **SfBitArray3D** | Voxel Analysis (PopCount) | vs `bool[,,]` Loop   | **🚀 366x Faster** | **8x Less RAM** |
+| **SfRingBuffer** | Data Streaming (Churn)    | vs `Queue<T>`        | **🔥 3.5x Faster** | **Zero Alloc**  |
+| **SfBitArray**   | Logical Masking (AND)     | vs `bool[]` Loop     | **⚡ 40x Faster**   | **8x Less RAM** |
+| **SfGrid2D**     | Column-Major Iteration    | vs `int[,]`          | **✅ 1.45x Faster** | Cache Friendly  |
+| **SfList**       | Foreach Iteration         | vs `List<T>`         | **✅ 1.1x Faster**  | **Zero Alloc**  |
 
-### Sorting Algorithms
-
-* **QuickSort**
-* **TreeSort**
-
-### Interfaces
-
-* `ISfDataStructure<T>`: Base interface for all collections
-* `ISfList<T>`: List interface
-* `ISfLinkedList<T>`: Doubly-linked list interface
-* `ISfStack<T>`: Stack interface
-* `ISfQueue<T>`: Queue interface
-* `ISfHeap<T>`: Generic heap interface
-* `ISfTree<T>`: Tree interface
-* `ISfDictionary<T>`: Dictionary interface
-
-###  Algorithms & Utilities
-
-* Sorting
-
-SfSorting.QuickSort(...)
-
-SfSorting.TreeSort(...)
-
-SfSorting.HeapSort(...)
-
-* Searching
-
-SfAlgorithms.BinarySearch(...)
-
-* Randomization
-
-SfAlgorithms.Shuffle(...)
-
-* Comparers
-
-SfComparers<T> – default comparer access
-
-SfComparerUtils – helper utilities for key/value and custom comparers
-
-### Spatial & Memory Optimized (New in v1.2.0)
-
-* **High-Performance Grids**: `SfGrid2D<T>`, `SfGrid3D<T>` (Flattened array implementation for CPU cache locality)
-* **Bit Manipulation**: `SfBitArray` (Stores booleans as bits, reducing memory usage by 8x)
-* **Hashing**: `SfHashSet<T>`, `SfDictionary<TKey, TValue>` (O(1) lookup and insert operations)
-* **Buffers**: `SfRingBuffer<T>` (Fixed-size circular queue for zero-allocation data streaming)
-
-### Key Capabilities
-
-* Fully generic implementations
-* Iteration and enumeration support
-* Custom comparers for heaps, priority queues, and sorting
-* Educational and practical reference for learning C# data structures
+> *Detailed benchmark results and methodology can be found in the [Benchmarks](/StructForge.Benchmarks) folder.*
 
 ---
 
-## Installation
+## ✨ Key Features
 
-You can install the latest version via **NuGet**:
+### ⚡ Zero-Allocation Guarantee
+All collections in StructForge use custom **`struct` Enumerators**.
+* **`foreach` loops allocate 0 bytes of garbage.**
+* Eliminates GC spikes in hot paths (e.g., Game Loops / Update methods).
+* Significantly faster iteration than standard `IEnumerable<T>` boxing.
 
+### 💾 Direct Memory Access (Span Support)
+All array-backed structures expose their internal data safely via `AsSpan()` and `AsReadOnlySpan()`.
+* Allows users to perform **Zero-Copy** operations.
+* Enables extremely fast binary serialization using `MemoryMarshal`.
+
+### 🧊 Spatial Optimization
+* **`SfGrid2D` / `SfGrid3D`**: Uses flattened 1D arrays (`z*w*h + y*w + x`) to maximize CPU cache hits, unlike .NET's multi-dimensional arrays which can cause cache misses during column-major traversal.
+* **`SfBitArray` Family**: Bit-packed structures (`1D`, `2D`, `3D`) for boolean maps (Fog of War, Collision), using **8x less memory** than `bool[]`.
+
+---
+
+## 📦 Installation
+
+Install via **NuGet Package Manager**:
 ```bash
 dotnet add package StructForge
 ```
 
-Or clone the repository and include the `StructForge` project in your solution:
+---
 
-```bash
-git clone https://github.com/FurkanKirat/StructForge.git
-```
+## 📚 Collections Overview
+
+### 🟢 Linear & Spatial (Zero-Allocation)
+
+**`SfList<T>`**: High-performance dynamic array. Supports `AsSpan()`, `RemoveAtSwap` (O(1) removal), and direct array access.
+
+**`SfGrid2D<T>` / `SfGrid3D<T>`**: Cache-friendly spatial grids. Proven to be up to 45% faster than native arrays in complex iterations.
+
+**`SfBitArray` / `SfBitArray2D` / `SfBitArray3D`**: SIMD-accelerated bit manipulation structures using hardware intrinsics (POPCNT).
+
+**`SfRingBuffer<T>`**: Fixed-size circular buffer. Guaranteed Zero-Allocation on enqueue/dequeue. Ideal for input history, logs, and network packets.
+
+### 🟡 Trees & Sets (Low-Allocation)
+
+**`SfAvlTree<T>`**: A strictly balanced Binary Search Tree. Faster insertions than .NET SortedSet in benchmarks.
+
+**`SfSortedSet<T>`**: Backed by SfAvlTree. Provides sorted iteration using a pooled stack buffer (avoiding recursion overhead).
+
+**`SfBinaryHeap<T>`**: Array-backed Min-Heap. Can be used as a high-performance Priority Queue.
+
+**`SfPriorityQueue<TItem, TPriority>`**: A wrapper around SfBinaryHeap for ease of use with separate priority values.
+
+**`SfHashSet<T>`**: Open-addressing hash set with struct enumerators. Optimized for iteration speed.
+
+### ⚪ Standard Wrappers
+
+**`SfStack<T>` / `SfQueue<T>`**: Optimized implementations using StructForge's underlying array logic for consistent API and performance.
 
 ---
 
-## Usage Examples
+## 💻 Usage Examples
 
-### 2D Grid
+### 1. Zero-Allocation Game Loop
+
+Iterating over `SfList` uses a public struct `Enumerator`, completely avoiding the boxing overhead of `IEnumerable<T>`.
 ```csharp
-// SfGrid2D uses a single 1D array internally for better CPU cache locality
-var grid = new SfGrid2D<int>(width: 10, height: 10);
+var entities = new SfList<Entity>(1000);
+// ... populate list ...
 
-// Access like a standard 2D array
-grid[5, 5] = 42;
-
-// Fast iteration (Linear memory access)
-foreach (var item in grid)
+// 0 GC Allocation here!
+foreach (var entity in entities)
 {
-    // Process item...
+    entity.Update();
 }
 ```
 
-### BitArray
+### 2. High-Performance Voxel Check
+
+Using `SfBitArray3D` to check 2 million voxels takes microseconds thanks to CPU Intrinsics.
 ```csharp
-// Stores 1024 booleans using only ~128 bytes (8x memory saving)
-var bits = new SfBitArray(1024);
+// Stores 128x128x128 world (2M blocks) in ~256 KB RAM (vs 2MB for bool[])
+var voxels = new SfBitArray3D(128, 128, 128);
 
-bits[100] = true;
-bits.Toggle(50);
+voxels.SetUnchecked(10, 50, 10, true);
 
-Console.WriteLine($"True Bits: {bits.CountTrue()}"); // Optimized population count
+// Hardware Accelerated PopCount (~360x Faster than loop)
+int activeBlocks = voxels.CountTrue(); 
 ```
 
-### Ring Buffer
+### 3. Zero-Copy Binary Serialization
+
+Since `SfGrid` stores data contiguously, you can cast it to bytes and write to disk instantly without intermediate buffers.
 ```csharp
-// Fixed-size buffer that overwrites old data automatically
-var buffer = new SfRingBuffer<string>(capacity: 3);
-
-buffer.Enqueue("Log 1");
-buffer.Enqueue("Log 2");
-buffer.Enqueue("Log 3");
-buffer.Enqueue("Log 4"); // Overwrites "Log 1"
-
-// No resizing, no garbage collection pressure
-foreach (var log in buffer)
-    Console.WriteLine(log); // Output: Log 2, Log 3, Log 4
-```
-### Sorted Dictionary
-
-```csharp
-var dict = new SfSortedDictionary<int, string>();
-dict.Add(3, "apple");
-dict.Add(1, "banana");
-dict.Add(2, "cherry");
-
-foreach (var kv in dict)
-Console.WriteLine($"{kv.Key}: {kv.Value}");
-// Output:
-// 1: banana
-// 2: cherry
-// 3: apple
+public void SaveTerrain(SfGrid2D<int> terrain, Stream stream)
+{
+    // 1. Get data as Span (No Copy)
+    ReadOnlySpan<int> data = terrain.AsReadOnlySpan();
+    
+    // 2. Reinterpret as Bytes (User-side optimization)
+    var bytes = System.Runtime.InteropServices.MemoryMarshal.AsBytes(data);
+    
+    // 3. Write to disk instantly
+    stream.Write(bytes);
+}
 ```
 
-### Shuffle and Binary Search
+### 4. Ring Buffer for Logs
 
+Ideal for scenarios where you need to keep the last N items without generating garbage.
 ```csharp
-int[] data = { 1, 2, 3, 4, 5, 6 };
-int index = SfSearching.BinarySearch(data, 4);
-Console.WriteLine(index);
-// Output: 3
+var logs = new SfRingBuffer<string>(100); // Fixed capacity
 
-```
-### AVL Tree
+// When full, it automatically overwrites the oldest item.
+// No resizing, No memory allocation.
+logs.Enqueue("Player joined");
+logs.Enqueue("Game started");
 
-```csharp
-var avl = new SfAvlTree<int>();
-avl.Add(10);
-avl.Add(5);
-avl.Add(15);
-avl.Add(7);
-
-Console.WriteLine($"Min: {avl.FindMin()}, Max: {avl.FindMax()}, Count: {avl.Count}");
-// Output: Min: 5, Max: 15, Count: 4
-```
-
-### Linked List
-
-```csharp
-var list = new SfLinkedList<int>();
-list.AddLast(1);
-list.AddLast(2);
-list.AddFirst(0);
-
-foreach (var item in list)
-    Console.WriteLine(item); // 0, 1, 2
-```
-
-### Priority Queue
-
-```csharp
-var pq = new SfPriorityQueue<string, int>();
-pq.Enqueue("low", 5);
-pq.Enqueue("high", 1);
-pq.Enqueue("medium", 3);
-
-foreach (var item in pq.EnumerateByPriority())
-    Console.WriteLine(item); // "high", "medium", "low"
-```
-
-### QuickSort
-
-```csharp
-int[] arr = { 5, 2, 9, 1, 5, 6 };
-SfSorting.QuickSort(arr);
-Console.WriteLine(string.Join(", ", arr)); // 1, 2, 5, 5, 6, 9
+foreach (var log in logs)
+{
+    Console.WriteLine(log);
+}
 ```
 
 ---
 
-## Contribution
+## ⚠️ Important Notes
 
-Contributions are welcome! Feel free to open issues, add features, or improve existing code. Keep in mind that this library is primarily **educational**.
+**Thread Safety**: StructForge collections are not thread-safe by default. This is a design choice to ensure maximum single-threaded performance (avoiding locking overhead). Use external synchronization if accessing from multiple threads.
+
+**SfDictionary**: Temporarily removed in v1.3.0 to re-architect for strict zero-allocation standards. Use `SfHashSet` for unique collections or standard .NET `Dictionary` for key-value pairs.
 
 ---
 
-## License
+## 📄 License
 
-MIT License – see [LICENSE](LICENSE) for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

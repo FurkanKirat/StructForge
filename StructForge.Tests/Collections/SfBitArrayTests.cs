@@ -179,5 +179,21 @@ namespace StructForge.Tests.Collections
             Assert.True(bits.Contains(true, null)); // default comparer
             Assert.True(bits.Contains(false));
         }
+
+        [Fact]
+        public void Enumerator_WorksCorrectly()
+        {
+            bool[] array = new bool[5];
+            array[0] = true;
+            var bits = new SfBitArray(5);
+            bits[0] = true;
+
+            int index = 0;
+            foreach (bool a in bits)
+            {
+                Assert.Equal(a, array[index++]);
+            }
+            Assert.Equal(5, index);
+        }
     }
 }

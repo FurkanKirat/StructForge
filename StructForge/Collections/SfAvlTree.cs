@@ -15,18 +15,34 @@ namespace StructForge.Collections
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the tree.</typeparam>
     [DebuggerTypeProxy(typeof(SfTreeDebugView<>))]
-    public class SfAvlTree<T> : ISfTree<T>, ICollection<T>
+    public sealed class SfAvlTree<T> : ISfDataStructure<T>, ICollection<T>
     {
+        private int _count;
         /// <inheritdoc cref="ICollection{T}.Count" />
-        public int Count { get; private set; }
+        
+        public int Count 
+        { 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count; 
+        }
 
         /// <inheritdoc/>
-        public bool IsReadOnly => false;
+        public bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => false;
+        }
 
         /// <inheritdoc/>
-        public bool IsEmpty => Count == 0;
+        public bool IsEmpty
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _count == 0; 
+        }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the height of the tree.
+        /// </summary>
         public int Height => GetHeight(_root);
         
         private SfAvlTreeNode<T> _root;
@@ -50,7 +66,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="collection"/> is null.</exception>
         public SfAvlTree(IEnumerable<T> collection, IComparer<T> comparer = null)
         {
-            SfThrowHelper.ThrowIfNull(collection);
+            if (collection is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(collection));
+            
             _comparer = comparer ?? SfComparers<T>.DefaultComparer;
             
             T[] arr = collection.ToArray();
@@ -61,8 +79,10 @@ namespace StructForge.Collections
                 TryAdd(item);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfAvlTreeInOrderEnumerator GetEnumerator() => new(this);
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator() => InOrder().GetEnumerator();
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
@@ -73,7 +93,7 @@ namespace StructForge.Collections
         public bool Contains(T item)
         {
             SfAvlTreeNode<T> current = _root;
-            while (current != null)
+            while (current is not null)
             {
                 int cmp = _comparer.Compare(item, current.Value);
                 if (cmp == 0) return true;
@@ -85,14 +105,14 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Remove(T item)
         {
-            int before = Count;
+            int before = _count;
             _root = Delete(_root, item);
-            return Count < before;
+            return _count < before;
         }
 
         private SfAvlTreeNode<T> Delete(SfAvlTreeNode<T> node, T item, bool decrementCount = true)
         {
-            if (node == null)
+            if (node is null)
                 return null;
 
             int cmp = _comparer.Compare(item, node.Value);
@@ -107,12 +127,12 @@ namespace StructForge.Collections
                 default:
                 {
                     if (decrementCount) 
-                        Count--;
+                        _count--;
 
                     // Node with one or zero children
-                    if (node.Left == null)
+                    if (node.Left is null)
                         return node.Right;
-                    if (node.Right == null)
+                    if (node.Right is null)
                         return node.Left;
 
                     // Node with two children → replace with in-order successor
@@ -141,43 +161,55 @@ namespace StructForge.Collections
         public void Add(T item)
         {
             if (!TryAdd(item))
-                throw new InvalidOperationException("Duplicate item");
+                SfThrowHelper.ThrowInvalidOperation("Duplicate item");
         }
 
         /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
             _root = null;
-            Count = 0;
+            _count = 0;
         }
 
         /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
         public void CopyTo(T[] array, int arrayIndex)
         {
-            if (array == null) 
-                throw new ArgumentNullException(nameof(array));
+            if (array is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(array));
             if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
-            if (arrayIndex + Count > array.Length)
-                throw new ArgumentException("Destination array is not large enough.");
-
+                SfThrowHelper.ThrowArgumentOutOfRange(nameof(arrayIndex));
+            if (arrayIndex + _count > array.Length) 
+                SfThrowHelper.ThrowArgument("Destination array is not large enough.");
+            
             foreach (T item in InOrder())
                 array[arrayIndex++] = item;
         }
 
         /// <inheritdoc/>
+        public T[] ToArray()
+        {
+            T[] arr = new T[_count];
+            CopyTo(arr, 0);
+            return arr;
+        }
+
+        /// <summary>
+        /// Attempts to add an item to the tree.
+        /// </summary>
+        /// <param name="item">The item to add.</param>
+        /// <returns>True if added; false if duplicate or insertion failed.</returns>
         public bool TryAdd(T item)
         {
             bool added = false;
             _root = TryAdd(_root, item, ref added);
             if (added)
-                Count++;
+                _count++;
             return added;
         }
 
         private SfAvlTreeNode<T> TryAdd(SfAvlTreeNode<T> node, T item, ref bool added)
         {
-            if (node == null)
+            if (node is null)
             {
                 added = true;
                 return new SfAvlTreeNode<T>(item);
@@ -254,79 +286,84 @@ namespace StructForge.Collections
             return newRoot;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns the minimum value in the tree.
+        /// </summary>
+        /// <returns>The minimum item.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if tree is empty.</exception>
         public T FindMin() => FindLeftmost(_root).Value;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Returns the maximum value in the tree.
+        /// </summary>
+        /// <returns>The maximum item.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if tree is empty.</exception>
         public T FindMax() => FindRightmost(_root).Value;
 
-        /// <inheritdoc/>
-        public IEnumerable<T> InOrder()
-        {
-            if (_root == null) yield break;
+        /// <summary>
+        /// Returns a low-allocation enumerable that traverses the tree in <b>In-Order</b> (Left-Root-Right).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This traversal yields elements in <b>sorted (ascending) order</b>.
+        /// </para>
+        /// <para>
+        /// Use this when you need to iterate through the data from smallest to largest, 
+        /// similar to a sorted list. This is the default behavior of the tree's enumerator.
+        /// </para>
+        /// </remarks>
+        /// <returns>A struct wrapper for allocation-free iteration.</returns>
+        public SfInOrderTraversal InOrder() => new(this);
 
-            SfStack<SfAvlTreeNode<T>> sfStack = new SfStack<SfAvlTreeNode<T>>(Count);
-            SfAvlTreeNode<T> current = _root;
+        /// <summary>
+        /// Returns a low-allocation enumerable that traverses the tree in <b>Pre-Order</b> (Root-Left-Right).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This traversal visits the parent before its children.
+        /// </para>
+        /// <para>
+        /// <b>Use Cases:</b>
+        /// <list type="bullet">
+        /// <item><description>Cloning/Copying the tree structure efficiently.</description></item>
+        /// <item><description>Serialization (saving the tree to reconstruct it later).</description></item>
+        /// <item><description>Prefix expression evaluation.</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
+        /// <returns>A struct wrapper for allocation-free iteration.</returns>
+        public SfPreOrderTraversal PreOrder() => new(this);
 
-            while (current != null || sfStack.Count > 0)
-            {
-                while (current != null)
-                {
-                    sfStack.Push(current);
-                    current = current.Left;
-                }
+        /// <summary>
+        /// Returns a low-allocation enumerable that traverses the tree in <b>Post-Order</b> (Left-Right-Root).
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This traversal visits children before their parent.
+        /// </para>
+        /// <para>
+        /// <b>Use Cases:</b>
+        /// <list type="bullet">
+        /// <item><description>Deleting the tree (freeing children before the parent).</description></item>
+        /// <item><description>Dependency resolution (processing leaves first).</description></item>
+        /// <item><description>Evaluating mathematical expressions (postfix/Reverse Polish Notation).</description></item>
+        /// </list>
+        /// </para>
+        /// </remarks>
+        /// <returns>A struct wrapper for allocation-free iteration.</returns>
+        public SfPostOrderTraversal PostOrder() => new(this);
 
-                current = sfStack.Pop();
-                yield return current.Value;
-                current = current.Right;
-            }
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<T> PreOrder()
-        {
-            if (_root == null) yield break;
-
-            SfStack<SfAvlTreeNode<T>> sfStack = new SfStack<SfAvlTreeNode<T>>(Count);
-            sfStack.Push(_root);
-
-            while (sfStack.Count > 0)
-            {
-                SfAvlTreeNode<T> node = sfStack.Pop();
-                yield return node.Value;
-
-                if (node.Right != null) sfStack.Push(node.Right);
-                if (node.Left != null) sfStack.Push(node.Left);
-            }
-        }
-
-        /// <inheritdoc/>
-        public IEnumerable<T> PostOrder()
-        {
-            if (_root == null) yield break;
-
-            SfStack<SfAvlTreeNode<T>> stack1 = new SfStack<SfAvlTreeNode<T>>(Count);
-            SfStack<SfAvlTreeNode<T>> stack2 = new SfStack<SfAvlTreeNode<T>>(Count);
-
-            stack1.Push(_root);
-            while (stack1.Count > 0)
-            {
-                SfAvlTreeNode<T> node = stack1.Pop();
-                stack2.Push(node);
-
-                if (node.Left != null) stack1.Push(node.Left);
-                if (node.Right != null) stack1.Push(node.Right);
-            }
-
-            while (stack2.Count > 0)
-                yield return stack2.Pop().Value;
-        }
-
-        /// <inheritdoc/>
+        /// <summary>
+        /// Tries to retrieve the actual stored value that is equal to the specified value
+        /// based on the set's equality or comparison logic.
+        /// </summary>
+        /// <param name="equalValue">The value to search for in the set.</param>
+        /// <param name="actualValue">The actual stored value if found; otherwise, the default value of T.</param>
+        /// <returns>True if a matching value is found; otherwise, false.</returns>
         public bool TryGetValue(T equalValue, out T actualValue)
         {
             var node = _root;
-            while (node != null)
+            while (node is not null)
             {
                 switch (_comparer.Compare(node.Value, equalValue))
                 {
@@ -361,19 +398,262 @@ namespace StructForge.Collections
 
         private static SfAvlTreeNode<T> FindLeftmost(SfAvlTreeNode<T> node)
         {
-            if (node == null)
-                throw new InvalidOperationException("Tree is empty.");
-            while (node.Left != null) node = node.Left;
+            if (node is null)
+                SfThrowHelper.ThrowInvalidOperation("Tree is empty.");
+                
+            while (node.Left is not null) node = node.Left;
             return node;
         }
 
         private static SfAvlTreeNode<T> FindRightmost(SfAvlTreeNode<T> node)
         {
-            if (node == null)
-                throw new InvalidOperationException("Tree is empty.");
-            while (node.Right != null) node = node.Right;
+            if (node is null)
+                SfThrowHelper.ThrowInvalidOperation("Tree is empty.");
+            
+            while (node.Right is not null) node = node.Right;
             return node;
         }
+
+        #region Enumerators
+        
+        public readonly struct SfPreOrderTraversal: IEnumerable<T>
+        {
+            private readonly SfAvlTree<T> _tree;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfPreOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfAvlTreePreOrderEnumerator GetEnumerator() => new(_tree);
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        
+        public readonly struct SfInOrderTraversal : IEnumerable<T>
+        {
+            private readonly SfAvlTree<T> _tree;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfInOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfAvlTreeInOrderEnumerator GetEnumerator() => new(_tree);
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        
+        public readonly struct SfPostOrderTraversal: IEnumerable<T>
+        {
+            private readonly SfAvlTree<T> _tree;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfPostOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public SfAvlTreePostOrderEnumerator GetEnumerator() => new(_tree);
+            IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        }
+        public struct SfAvlTreePreOrderEnumerator : IEnumerator<T>
+        {
+            private readonly SfAvlTreeNode<T> _root;
+            private readonly SfStack<SfAvlTreeNode<T>> _stack;
+            
+            private SfAvlTreeNode<T> _current;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SfAvlTreePreOrderEnumerator(SfAvlTree<T> tree)
+            {
+                _current = null;
+                int capacity = Math.Max(16, tree.Height + 4);
+                _stack = new SfStack<SfAvlTreeNode<T>>(capacity);
+                _root = tree._root;
+                _stack.Push(_root);
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                if (_stack.IsEmpty)
+                    return false;
+                
+                _current = _stack.Pop();
+                
+                if (_current.Right is not null)
+                    _stack.Push(_current.Right);
+                
+                if (_current.Left is not null)
+                    _stack.Push(_current.Left);
+                
+                return true;
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _stack.Clear();
+                _stack.Push(_root);
+                _current = null;
+            }
+
+            public ref T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ref _current.Value;
+            }
+            
+            T IEnumerator<T>.Current => _current.Value;
+            object IEnumerator.Current => _current.Value;
+
+            public void Dispose() { }
+        }
+        
+        public struct SfAvlTreeInOrderEnumerator : IEnumerator<T>
+        {
+            private readonly SfAvlTreeNode<T> _root;
+            private readonly SfStack<SfAvlTreeNode<T>> _stack;
+            
+            private SfAvlTreeNode<T> _current;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SfAvlTreeInOrderEnumerator(SfAvlTree<T> tree)
+            {
+                _root = tree._root;
+                _current = null;
+                
+                int capacity = Math.Max(16, tree.Height + 4);
+                _stack = new SfStack<SfAvlTreeNode<T>>(capacity);
+
+                PreparePath(_root);
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                if (_stack.IsEmpty)
+                    return false;
+                
+                _current =  _stack.Pop();
+                if (_current.Right != null)
+                {
+                    PreparePath(_current.Right);
+                }
+
+                return true;
+            }
+            
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _stack.Clear();
+                _current = null;
+                PreparePath(_root);
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void PreparePath(SfAvlTreeNode<T> node)
+            {
+                while (node != null)
+                {
+                    _stack.Push(node);
+                    node = node.Left;
+                }
+            }
+
+            public ref T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ref _current.Value;
+            }
+            
+            T IEnumerator<T>.Current => _current.Value;
+            object IEnumerator.Current => _current.Value;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose() { }
+        }
+        
+        public struct SfAvlTreePostOrderEnumerator : IEnumerator<T>
+        {
+            private readonly SfAvlTreeNode<T> _root;
+            private readonly SfStack<SfAvlTreeNode<T>> _stack;
+            
+            private SfAvlTreeNode<T> _current;
+            private SfAvlTreeNode<T> _lastVisitedNode;
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            internal SfAvlTreePostOrderEnumerator(SfAvlTree<T> tree)
+            {
+                _root = tree._root;
+                _current = null;
+                _lastVisitedNode = null;
+                
+                int capacity = Math.Max(16, tree.Height + 4);
+                _stack = new SfStack<SfAvlTreeNode<T>>(capacity);
+
+                PreparePath(_root);
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public bool MoveNext()
+            {
+                if (_stack.IsEmpty)
+                    return false;
+                
+                while (!_stack.IsEmpty)
+                {
+                    SfAvlTreeNode<T> peekNode = _stack.Peek();
+                    
+                    if (peekNode.Right != null && peekNode.Right != _lastVisitedNode)
+                    {
+                        PreparePath(peekNode.Right);
+                    }
+                    else
+                    {
+                        _current = _stack.Pop();
+                        _lastVisitedNode = _current;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Reset()
+            {
+                _stack.Clear();
+                _current = null;
+                _lastVisitedNode = null;
+                PreparePath(_root);
+            }
+            
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            private void PreparePath(SfAvlTreeNode<T> node)
+            {
+                while (node != null)
+                {
+                    _stack.Push(node);
+                    node = node.Left;
+                }
+            }
+
+            public ref T Current
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => ref _current.Value;
+            }
+            
+            T IEnumerator<T>.Current => _current.Value;
+            object IEnumerator.Current => _current.Value;
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Dispose() { }
+        }
+
+        #endregion
     }
     
     /// <summary>

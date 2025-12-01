@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using StructForge.Collections;
+using StructForge.Comparers;
 
 namespace StructForge.Tests.Collections
 {
@@ -9,7 +10,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Enqueue_Dequeue_ShouldFollowPriorityOrder_MaxHeap()
         {
-            var pq = new SfPriorityQueue<string, int>(minHeap: false);
+            var pq = new SfPriorityQueue<string, int>(comparer:SfComparers<int>.ReverseComparer);
 
             pq.Enqueue("Low", 1);
             pq.Enqueue("Medium", 5);
@@ -24,7 +25,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Enqueue_Dequeue_ShouldFollowPriorityOrder_MinHeap()
         {
-            var pq = new SfPriorityQueue<string, int>(minHeap: true);
+            var pq = new SfPriorityQueue<string, int>();
 
             pq.Enqueue("Low", 1);
             pq.Enqueue("Medium", 5);
@@ -38,7 +39,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void Peek_ShouldReturnWithoutRemoving()
         {
-            var pq = new SfPriorityQueue<string, int>(minHeap: false);
+            var pq = new SfPriorityQueue<string, int>(comparer:SfComparers<int>.ReverseComparer);
             pq.Enqueue("A", 10);
             pq.Enqueue("B", 5);
 
@@ -51,7 +52,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void EnumerateByPriority_ShouldReturnSortedOrder()
         {
-            var pq = new SfPriorityQueue<string, int>(minHeap: false);
+            var pq = new SfPriorityQueue<string, int>(comparer:SfComparers<int>.ReverseComparer);
             pq.Enqueue("Low", 1);
             pq.Enqueue("Medium", 5);
             pq.Enqueue("High", 10);
@@ -134,7 +135,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void PriorityQueue_MaxHeap_WithComparer_Test()
         {
-            var pq = new SfPriorityQueue<string, int>(Comparer<int>.Default, minHeap: false);
+            var pq = new SfPriorityQueue<string, int>(comparer:SfComparers<int>.ReverseComparer);
             pq.Enqueue("Low", 1);
             pq.Enqueue("Medium", 5);
             pq.Enqueue("High", 10);
@@ -147,7 +148,7 @@ namespace StructForge.Tests.Collections
         [Fact]
         public void PriorityQueue_WithEntities_KeySelector_Test()
         {
-            var pq = new SfPriorityQueue<Entity, int>(minHeap: false);
+            var pq = new SfPriorityQueue<Entity, int>(comparer:SfComparers<int>.ReverseComparer);
             pq.Enqueue(new Entity("Goblin", 5), 5);
             pq.Enqueue(new Entity("Dragon", 10), 10);
             pq.Enqueue(new Entity("Slime", 2), 2);

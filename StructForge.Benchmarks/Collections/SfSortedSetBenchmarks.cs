@@ -1,91 +1,119 @@
 ﻿using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Order;
 using StructForge.Collections;
 
-namespace StructForge.Benchmarks.Collections
+namespace StructForge.Benchmarks.Collections;
+
+[MemoryDiagnoser]
+[RankColumn]
+public class SfSortedSetBenchmarks
 {
-    [MemoryDiagnoser]
-    [Orderer(SummaryOrderPolicy.FastestToSlowest)]
-    [RankColumn]
-    public class SfSortedSetBenchmarks
+    [Params(10_000, 100_000)] 
+    public int N;
+
+    private SortedSet<int> _sysSet;
+    private SfSortedSet<int> _sfSet;
+    
+    private int[] _data;
+    private int[] _sortedData;
+    private int[] _missData; 
+
+    [GlobalSetup]
+    public void Setup()
     {
-        private SortedSet<int> _systemSet;
-        private SfSortedSet<int> _sfSet;
-        private int[] _testData;
-        private int[] _removeData;
+        var rnd = new Random(42);
+        
+        _data = new int[N];
+        _missData = new int[N];
+        
+        _sysSet = new SortedSet<int>();
+        _sfSet = new SfSortedSet<int>();
 
-        [Params(100, 1_000, 10_000)]
-        public int N;
-
-        [GlobalSetup]
-        public void Setup()
+        for (int i = 0; i < N; i++)
         {
-            var random = new Random(42);
-            _testData = new int[N];
-            _removeData = new int[N / 2];
-
-            for (int i = 0; i < N; i++)
-                _testData[i] = random.Next();
-
-            Array.Copy(_testData, _removeData, N / 2);
-
-            _systemSet = new SortedSet<int>();
-            _sfSet = new SfSortedSet<int>();
+            _data[i] = rnd.Next(); 
+        }
+        
+        for (int i = 0; i < N; i++)
+        {
+            _missData[i] = rnd.Next(); 
         }
 
-        // --------------------------------------------------
-        // ADD BENCHMARKS
-        // --------------------------------------------------
-        [Benchmark(Baseline = true)]
-        public void SystemSortedSet_Add()
+        foreach (var item in _data)
         {
-            var set = new SortedSet<int>();
-            for (int i = 0; i < N; i++)
-                set.Add(_testData[i]);
+            _sysSet.Add(item);
+            _sfSet.TryAdd(item);
         }
+    }
+    
+    
+    [Benchmark(Baseline = true)]
+    public void System_Add_Random()
+    {
+        _sysSet.Clear();
+        foreach (var item in _data)
+        {
+            _sysSet.Add(item);
+        }
+    }
 
-        [Benchmark]
-        public void SfSortedSet_Add()
+    [Benchmark]
+    public void Sf_Add_Random()
+    {
+        _sfSet.Clear();
+        foreach (var item in _data)
         {
-            var set = new SfSortedSet<int>();
-            for (int i = 0; i < N; i++)
-                set.Add(_testData[i]);
+            _sfSet.TryAdd(item);
         }
+    }
+    
+    [Benchmark]
+    public int System_Contains()
+    {
+        int found = 0;
+        foreach (var item in _data)
+        {
+            if (_sysSet.Contains(item)) found++;
+        }
+        return found;
+    }
 
-        // --------------------------------------------------
-        // CONTAINS BENCHMARKS
-        // --------------------------------------------------
-        [Benchmark]
-        public void SystemSortedSet_Contains()
+    [Benchmark]
+    public int Sf_Contains()
+    {
+        int found = 0;
+        foreach (var item in _data)
         {
-            for (int i = 0; i < N; i++)
-                _systemSet.Contains(_testData[i]);
+            if (_sfSet.Contains(item)) found++;
         }
+        return found;
+    }
+    
+    [Benchmark]
+    public int System_Min()
+    {
+        return _sysSet.Min;
+    }
 
-        [Benchmark]
-        public void SfSortedSet_Contains()
-        {
-            for (int i = 0; i < N; i++)
-                _sfSet.Contains(_testData[i]);
-        }
+    [Benchmark]
+    public int Sf_Min()
+    {
+        return _sfSet.Min; 
+    }
+    
+    
+    [Benchmark]
+    public int System_Foreach()
+    {
+        int sum = 0;
+        foreach (var item in _sysSet) sum += item;
+        return sum;
+    }
 
-        // --------------------------------------------------
-        // REMOVE BENCHMARKS
-        // --------------------------------------------------
-        [Benchmark]
-        public void SystemSortedSet_Remove()
-        {
-            var set = new SortedSet<int>(_testData);
-            for (int i = 0; i < _removeData.Length; i++)
-                set.Remove(_removeData[i]);
-        }
-
-        [Benchmark]
-        public void SfSortedSet_Remove()
-        {
-            var set = new SfSortedSet<int>(_testData);
-            for (int i = 0; i < _removeData.Length; i++)
-                set.Remove(_removeData[i]);
-        }
+    [Benchmark]
+    public int Sf_Foreach()
+    {
+        int sum = 0;
+        foreach (var item in _sfSet) sum += item;
+        return sum;
     }
 }

@@ -1,66 +1,52 @@
 ﻿using StructForge.Collections;
 using StructForge.Comparers;
+using Xunit.Abstractions;
 
 namespace StructForge.Tests.Collections
 {
     public class SfAvlTreeTests
     {
-        [Fact]
-        public void Add_ShouldIncreaseCount_AndContainItems()
+        private readonly ITestOutputHelper _testOutputHelper;
+
+        public SfAvlTreeTests(ITestOutputHelper testOutputHelper)
         {
-            var tree = new SfAvlTree<int>();
-
-            tree.Add(10);
-            tree.Add(5);
-            tree.Add(15);
-
-            Assert.Equal(3, tree.Count);
-            Assert.Contains(10, tree);
-            Assert.Contains(5, tree);
-            Assert.Contains(15, tree);
+            _testOutputHelper = testOutputHelper;
         }
 
         [Fact]
-        public void InOrder_ShouldReturnSortedValues()
+        public void PreOrder_Should_Match_AVL_Balanced_Structure()
         {
+            var input = new[] { 1, 2, 3, 4, 5, 6, 7 };
             var tree = new SfAvlTree<int>();
-            tree.Add(10);
-            tree.Add(5);
-            tree.Add(15);
-            tree.Add(2);
-            tree.Add(7);
 
-            var result = tree.InOrder().ToArray();
+            foreach (var item in input)
+            {
+                tree.Add(item);
+            }
+            
+            var expectedPreOrder = new[] { 4, 2, 1, 3, 6, 5, 7 };
+            var expectedPostOrder = new[] { 1, 3, 2, 5, 7, 6, 4 };
+            var expectedInOrder = new[] { 1, 2, 3, 4, 5, 6, 7 };
+            
+            int index = 0;
+            foreach (var item in tree.PreOrder())
+            {
+                Assert.Equal(expectedPreOrder[index++], item);
+            }
 
-            Assert.Equal(new[] { 2, 5, 7, 10, 15 }, result);
+            index = 0;
+            foreach (var item in tree.PostOrder())
+            {
+                Assert.Equal(expectedPostOrder[index++], item);
+            }
+    
+            index = 0;
+            foreach (var item in tree)
+            {
+                Assert.Equal(expectedInOrder[index++], item);
+            }
         }
-
-        [Fact]
-        public void PreOrder_ShouldReturnCorrectOrder()
-        {
-            var tree = new SfAvlTree<int>();
-            tree.Add(10);
-            tree.Add(5);
-            tree.Add(15);
-
-            var result = tree.PreOrder().ToArray();
-
-            Assert.Equal(new[] { 10, 5, 15 }, result);
-        }
-
-        [Fact]
-        public void PostOrder_ShouldReturnCorrectOrder()
-        {
-            var tree = new SfAvlTree<int>();
-            tree.Add(10);
-            tree.Add(5);
-            tree.Add(15);
-
-            var result = tree.PostOrder().ToArray();
-
-            Assert.Equal(new[] { 5, 15, 10 }, result);
-        }
-
+        
         [Fact]
         public void FindMinMax_ShouldReturnCorrectValues()
         {
