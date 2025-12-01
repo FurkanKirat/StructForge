@@ -22,6 +22,14 @@ Benchmarks performed on **Intel Core i7-13650HX, .NET 8.0**.
 | **SfGrid2D**     | Column-Major Iteration    | vs `int[,]`          | **✅ 1.45x Faster** | Cache Friendly  |
 | **SfList**       | Foreach Iteration         | vs `List<T>`         | **✅ 1.1x Faster**  | **Zero Alloc**  |
 
+
+## 📊 Performance Visualizations
+
+| Benchmark Scenario                                                                                                                                                                                                                              | Speedup Analysis                                                    |
+|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------|
+| **1. 3D Voxel Analysis**<br>*(Native `bool[,,]` vs `SfBitArray3D`)*<br><br>Native arrays struggle with large 3D datasets due to memory overhead. StructForge leverages **CPU SIMD instructions (PopCount)** to process 64 blocks in parallel.   | ![Voxel Benchmark](Benchmarks/images/voxel_benchmark.png)           |
+| **2. Data Streaming**<br>*(System `Queue<T>` vs `SfRingBuffer`)*<br><br>Standard queues perform array resizing and version checks. `SfRingBuffer` optimizes throughput by removing **modulo arithmetic** and utilizing simpler branching logic. | ![RingBuffer Benchmark](Benchmarks/images/ringbuffer_benchmark.png) |
+| **3. Grid Iteration**<br>*(Native `int[,]` vs `SfGrid2D`)*<br><br>Multi-dimensional arrays often cause **CPU cache misses** during column-major traversal. StructForge's **flattened 1D layout** ensures linear memory access patterns.         | ![Grid Benchmark](Benchmarks/images/grid_benchmark.png)             |
 > *Detailed benchmark results and methodology can be found in the [Benchmarks](Benchmarks) folder.*
 
 ---
