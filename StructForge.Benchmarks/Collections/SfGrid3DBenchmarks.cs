@@ -7,8 +7,8 @@ namespace StructForge.Benchmarks.Collections;
 [RankColumn]
 public class SfGrid3DBenchmarks
 {
-    // 32^3 = 32,768 eleman (L1 Cache sığar)
-    // 128^3 = 2,097,152 eleman (RAM'e taşar - Cache Miss başlar)
+    // 32^3 = 32,768 elements (fits into L1 Cache)
+    // 128^3 = 2,097,152 elements (overflows into RAM - Cache Miss begins)
     [Params(32, 128)] 
     public int Size;
 

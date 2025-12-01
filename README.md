@@ -22,7 +22,7 @@ Benchmarks performed on **Intel Core i7-13650HX, .NET 8.0**.
 | **SfGrid2D**     | Column-Major Iteration    | vs `int[,]`          | **✅ 1.45x Faster** | Cache Friendly  |
 | **SfList**       | Foreach Iteration         | vs `List<T>`         | **✅ 1.1x Faster**  | **Zero Alloc**  |
 
-> *Detailed benchmark results and methodology can be found in the [Benchmarks](/StructForge.Benchmarks) folder.*
+> *Detailed benchmark results and methodology can be found in the [Benchmarks](Benchmarks) folder.*
 
 ---
 
