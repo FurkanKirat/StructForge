@@ -10,7 +10,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>StructForge</PackageId>
-		<Version>1.3.1</Version>
+		<Version>1.3.2</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		
@@ -22,19 +22,11 @@
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
 		
-		<PackageReleaseNotes>v1.3.1 - High-Performance Update:
-🚀 Performance:
-- SfBitArray3D: Added AVX-optimized PopCount (~360x faster than native loops).
-- SfRingBuffer: Removed modulo operations, now ~3.5x faster than Queue&lt;T&gt;.
-- SfGrid2D/3D: Optimized memory layout for cache locality.
-
-✨ Features:
-- Zero-Allocation Iteration: All collections now use struct enumerators.
-- AsSpan() Support: Added direct memory access for Zero-Copy serialization.
-- SfList: Added RemoveAtSwap (O(1) removal) and EnsureCapacity.
-
-⚠️ Breaking Changes:
-- Removed SfDictionary and SfSortedDictionary temporarily for re-architecture.
+		<PackageReleaseNotes>v1.3.2 - Critical Bug Fix Update:
+🐛 Bug Fixes:
+- Fixed a critical logic error in `SfBitArray.CountTrue()` where 64-bit integers were incorrectly masked with 32-bit masks, resulting in incorrect population counts.
+- The fix utilizes a corrected 64-bit SWAR algorithm, ensuring both accuracy and high performance across all platforms (including Unity/.NET Standard 2.1).
+- Added AsReadOnlySpan{T} methods
 		</PackageReleaseNotes>
 		
 		<PackageReadmeFile>README.md</PackageReadmeFile>
