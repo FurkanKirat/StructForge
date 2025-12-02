@@ -107,8 +107,8 @@ public class SfBitArray3DTests
         var a = new SfBitArray3D(5, 5, 5);
         a[2, 3, 1] = true;
 
-        ulong[] ulongs = a.ToULongArray();
-        var b = new SfBitArray3D(5, 5, 5, ulongs);
+        var span = a.AsReadOnlySpan();
+        var b = new SfBitArray3D(5, 5, 5, span.ToArray());
 
         Assert.True(b[2, 3, 1]);
     }

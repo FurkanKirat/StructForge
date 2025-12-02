@@ -199,18 +199,18 @@ namespace StructForge.Collections
         }
         
         /// <summary>
-        /// Returns the underlying data array (shared reference).
-        /// </summary>
-        /// <returns>The internal array containing the grid data.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T[] GetRawData() => _buffer;
-        
-        /// <summary>
         /// Returns the underlying data array as span.
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Span<T> AsSpan() => _buffer.AsSpan();
+        
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
 
         /// <summary>
         /// Returns an unsafe reference to the element at the specified 3D coordinate without bounds checking.

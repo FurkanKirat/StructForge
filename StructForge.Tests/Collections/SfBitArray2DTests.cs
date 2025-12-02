@@ -151,8 +151,8 @@ public class SfBitArray2DTests
         var a = new SfBitArray2D(5, 5);
         a[2, 3] = true;
 
-        ulong[] arr = a.ToULongArray();
-        var b = new SfBitArray2D(5, 5, arr);
+        var span = a.AsReadOnlySpan();
+        var b = new SfBitArray2D(5, 5, span.ToArray());
 
         Assert.True(b[2, 3]);
     }

@@ -149,10 +149,18 @@ namespace StructForge.Collections
         }
         
         /// <summary>
-        /// Returns the underlying ulong buffer used by the 3D bit array.
+        /// Returns the underlying data array as span.
         /// </summary>
-        /// <returns>The internal ulong array containing the bit data.</returns>
-        public ulong[] ToULongArray() => _buffer.ToULongArray();
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<ulong> AsSpan() => _buffer.AsSpan();
+        
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<ulong> AsReadOnlySpan() => _buffer.AsReadOnlySpan();
 
         /// <summary>
         /// Calculates the linear bit index corresponding to a 3D coordinate.

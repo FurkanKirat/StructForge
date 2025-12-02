@@ -129,6 +129,20 @@ namespace StructForge.Collections
         }
         
         #endregion
+        
+        /// <summary>
+        /// Returns the underlying data array as span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<T> AsSpan() => _buffer.AsSpan();
+        
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<T> AsReadOnlySpan() => _buffer.AsReadOnlySpan();
 
         #region Stack Operations
 

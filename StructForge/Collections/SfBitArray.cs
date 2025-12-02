@@ -90,12 +90,20 @@ namespace StructForge.Collections
     
             ClearUnusedBits();
         }
-
+        
         /// <summary>
-        /// Returns the internal ulong buffer (shared reference).
+        /// Returns the underlying data array as span.
         /// </summary>
-        /// <returns>The internal ulong array containing the bit data.</returns>
-        public ulong[] ToULongArray() => _bits;
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<ulong> AsSpan() => _bits.AsSpan();
+        
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<ulong> AsReadOnlySpan() => new(_bits);
 
         /// <summary>
         /// Gets or sets the boolean value at the specified index.
@@ -290,7 +298,7 @@ namespace StructForge.Collections
         /// This is also known as the Hamming Weight.
         /// Uses the SWAR (SIMD Within A Register) algorithm for efficient bit counting.
         /// </summary>
-        /// <param name="value">The 32-bit value to count bits in.</param>
+        /// <param name="i">The 32-bit value to count bits in.</param>
         /// <returns>The number of bits set to 1 in the value (0-32).</returns>
         /// <remarks>
         /// Algorithm breakdown (works on pairs of bits in parallel):
@@ -324,12 +332,12 @@ namespace StructForge.Collections
         /// 
         /// Performance: ~5-10x faster than naive bit-by-bit counting for 32-bit values
         /// </remarks>
-        private static ulong PopCount(ulong value)
+        private static ulong PopCount(ulong i)
         {
-            value -= (value >> 1) & 0x55555555;
-            value = (value & 0x33333333) + ((value >> 2) & 0x33333333);
-            value = (((value + (value >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
-            return value;
+            i = i - ((i >> 1) & 0x5555555555555555UL);
+            i = (i & 0x3333333333333333UL) + ((i >> 2) & 0x3333333333333333UL);
+            i = (i + (i >> 4)) & 0x0F0F0F0F0F0F0F0FUL;
+            return ((i * 0x0101010101010101UL) >> 56);
         }
 
         /// <inheritdoc/>
@@ -430,7 +438,7 @@ namespace StructForge.Collections
 
                 _index++;
                 if ((_index & 63) == 0)
-                    _currentWord = _bitArray.ToULongArray()[_wordIndex++];
+                    _currentWord = _bitArray._bits[_wordIndex++];
                 
                 return true;
             }

@@ -381,14 +381,18 @@ namespace StructForge.Collections
         #endregion
         
         /// <summary>
-        /// Returns a Span covering the valid elements of the list.
-        /// Allows for zero-copy access and extremely fast iteration.
+        /// Returns the underlying data array as span.
         /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan() => new(_buffer, 0, _count);
-
+        public Span<T> AsSpan() => _buffer.AsSpan();
+        
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<T> AsReadOnlySpan() => new(_buffer, 0, _count);
+        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
 
         /// <summary>
         /// Trims the underlying array if it has excessive capacity,
