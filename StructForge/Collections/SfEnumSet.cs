@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using StructForge.Helpers;
 
-namespace StructForge.Collections;
-
+namespace StructForge.Collections
+{
+    
 /// <summary>
 /// A high-performance enum set implementation, generally performs better than
 /// .net's HashSet for enums
@@ -399,4 +400,5 @@ public class SfEnumSet<TEnum> : ISfSet<TEnum>, ICollection<TEnum> where TEnum : 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose() { }
     }
+}
 }
