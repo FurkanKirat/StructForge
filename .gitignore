@@ -429,3 +429,17 @@ tasks.xml
 usage.statistics.xml
 shelf/
 
+StructForge.UnityDev/[Ll]ibrary/
+StructForge.UnityDev/[Tt]emp/
+StructForge.UnityDev/[Oo]bj/
+StructForge.UnityDev/[Bb]uild/
+StructForge.UnityDev/[Bb]uilds/
+StructForge.UnityDev/[Ll]ogs/
+StructForge.UnityDev/[Uu]ser[Ss]ettings/
+StructForge.UnityDev/Assets/StructForge/
+
+StructForge.UnityDev
+*.asset
+*.unity
+!StructForge.UnityDev/Assets/
+!StructForge.UnityDev/ProjectSettings/
