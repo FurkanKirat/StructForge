@@ -29,14 +29,14 @@ This release introduces full **Unity Game Engine** support via OpenUPM and adds 
 
 #### ✨ New Features
 * **Unity Support:** Added `package.json` and `.asmdef` definitions. The library is now fully compatible with Unity 2021.3+ and can be installed via **OpenUPM** or Git URL.
-* **SfEnumSet<T>:** A new zero-allocation set specifically for Enums. Uses bitwise operations instead of hashing.
-    * **Performance:** ~1.7x faster than `HashSet<Enum>`.
+* **SfEnumSet{T}:** A new zero-allocation set specifically for Enums. Uses bitwise operations instead of hashing.
+    * **Performance:** ~1.7x faster than `HashSet{TEnum}`.
     * **Memory:** Allocates up to 2x less memory.
     * Includes new constructor `SfEnumSet(ulong[] buffer)` for easy serialization.
 
 #### ⚡ Performance Optimizations
-* **SfBitArray & SfGrid:** Implemented `Unsafe` address arithmetic for `GetUnchecked` / `SetUnchecked` methods, bypassing JIT bounds checks for maximum speed in tight loops.
-* **SfList:** Reverted enumerator logic to standard array access to enable JIT optimizations (Loop Unrolling & Bounds Check Elimination).
+* **SfBitArray - SfGrid:** Implemented `Unsafe` address arithmetic for `GetUnchecked` / `SetUnchecked` methods, bypassing JIT bounds checks for maximum speed in tight loops.
+* **SfList:** Reverted enumerator logic to standard array access to enable JIT optimizations (Loop Unrolling - Bounds Check Elimination).
 
 #### 📦 Installation
 
