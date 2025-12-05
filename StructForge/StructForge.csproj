@@ -11,7 +11,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>StructForge</PackageId>
-		<Version>1.4.0</Version>
+		<Version>1.4.1</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		
@@ -44,6 +44,7 @@ This release introduces full **Unity Game Engine** support via OpenUPM and adds 
 ```bash
 openupm add com.kankangames.structforge
 		</PackageReleaseNotes>
+
 		
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
@@ -54,6 +55,12 @@ openupm add com.kankangames.structforge
 	
 	<ItemGroup>
 	  <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<None Remove="**/*.meta" />
+		<Compile Remove="**/*.meta" />
+		<EmbeddedResource Remove="**/*.meta" />
 	</ItemGroup>
 
 </Project>
