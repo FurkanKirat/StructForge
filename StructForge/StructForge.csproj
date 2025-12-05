@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
+		<UseArtifactsOutput>true</UseArtifactsOutput>
+		<ArtifactsPath>$(MSBuildThisFileDirectory).artifacts</ArtifactsPath>
+	 </PropertyGroup>
+  
+	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
 		
 		<LangVersion>9.0</LangVersion>
@@ -8,11 +13,10 @@
 		<Nullable>disable</Nullable>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		
-		<UseArtifactsOutput>true</UseArtifactsOutput>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>StructForge</PackageId>
-		<Version>1.4.2</Version>
+		<Version>1.4.3</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		
@@ -24,7 +28,7 @@
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
 		
-		<PackageReleaseNotes>### 🔧 Maintenance Release v1.4.2
+		<PackageReleaseNotes>### 🔧 Maintenance Release v1.4.3
 
 This release resolves compilation errors for Unity 2021.3+ users and cleans up the project structure.
 
@@ -32,7 +36,7 @@ This release resolves compilation errors for Unity 2021.3+ users and cleans up t
 * **Fixed C# Version Mismatch:** Enforced `LangVersion 9.0` in the project configuration.
     * *Fixes:* `error CS8773: Feature 'file-scoped namespace' is not available in C# 9.0`.
     * All file-scoped namespaces have been converted to block-scoped namespaces to ensure full compatibility with Unity 2021 LTS.
-* **Fixed Duplicate Attributes:** Enabled .NET 8 `<UseArtifactsOutput>` to redirect build artifacts.
+* **Fixed Duplicate Attributes:** Enabled .NET 8 {UseArtifactsOutput} to redirect build artifacts.
     * *Fixes:* `error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute'`.
     * Prevents Unity from detecting and conflicting with Visual Studio's `bin` and `obj` folders inside the package directory.
 
@@ -42,7 +46,8 @@ This release resolves compilation errors for Unity 2021.3+ users and cleans up t
 
 **For Unity (OpenUPM):**
 ```bash
-openupm add com.kankangames.structforge
+openupm add com.kankangames.structforge 
+			```		
 		</PackageReleaseNotes>
 
 		
