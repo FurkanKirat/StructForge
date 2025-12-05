@@ -20,7 +20,7 @@ namespace StructForge.Collections
         /// <summary>
         /// The underlying linear array that stores the 2D grid data.
         /// </summary>
-        private T[] _buffer;
+        private readonly T[] _buffer;
         
         /// <summary>
         /// Gets the width (X dimension) of the grid.
@@ -129,7 +129,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when coordinates are outside the valid bounds.</exception>
         public T this[int x, int y]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer[CheckedIndex(x, y)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _buffer[CheckedIndex(x, y)] = value;
         }
 
@@ -141,7 +143,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the valid bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer[CheckedIndex(index)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _buffer[CheckedIndex(index)] = value;
         }
 
@@ -152,11 +156,12 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <param name="value">When this method returns, contains the element at the specified coordinate if found; otherwise, the default value.</param>
         /// <returns><c>true</c> if the coordinates are within bounds; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGet(int x, int y, out T value)
         {
             if (IsInBounds(x, y))
             {
-                value = _buffer[ToIndex(x, y)];
+                value = _buffer[y * _width + x];
                 return true;
             }
 
@@ -185,10 +190,7 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <returns>A reference to the element at the specified coordinate.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref T GetUnsafeRef(int x, int y)
-        {
-            return ref _buffer[y * _width + x];
-        }
+        public ref T GetUnsafeRef(int x, int y) => ref _buffer[y * _width + x];
         
         /// <summary>
         /// Sets the element at the specified 2D coordinate without bounds checking.
@@ -197,7 +199,7 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <param name="value">The value to set.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetUnchecked(int x, int y, T value)
+        public void SetUnsafe(int x, int y, T value)
         {
             _buffer[y * _width + x] = value;
         }
@@ -222,7 +224,7 @@ namespace StructForge.Collections
         private int CheckedIndex(int x, int y) {
             if (!IsInBounds(x, y)) 
                 SfThrowHelper.ThrowArgumentOutOfRange("index", "index is out of range.");
-            return ToIndex(x, y);
+            return y * _width + x;
         }
         
         /// <summary>
@@ -262,7 +264,7 @@ namespace StructForge.Collections
         /// <param name="index">The linear index to check.</param>
         /// <returns><c>true</c> if the index is within bounds; otherwise, <c>false</c>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsInBounds(int index) => (uint)index < _buffer.Length;
+        public bool IsInBounds(int index) => (uint)index < (uint)_buffer.Length;
         
         /// <summary>
         /// Fills the entire grid with the specified value.

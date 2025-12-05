@@ -5,7 +5,7 @@ namespace StructForge.Benchmarks.Collections;
 
 [MemoryDiagnoser]
 [RankColumn]
-public class SfGrid2DAdvancedBenchmarks
+public class SfGrid2DBenchmarks
 {
     [Params(32, 1000, 2000, 4096)]
     public int Size;

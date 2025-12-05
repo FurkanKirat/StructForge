@@ -10,23 +10,28 @@ namespace StructForge.Enumerators
     /// </summary>
     public struct SfArrayEnumerator<T> : IEnumerator<T>
     {
-        private readonly T[] _array;
+        private readonly T[] _buffer;
         private readonly int _length;
         private int _index;
         
+        /// <summary>
+        /// Gives the current element's reference
+        /// </summary>
         public ref T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _array[_index];
+            get => ref _buffer[_index];
         }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal SfArrayEnumerator(T[] array, int count)
+        internal SfArrayEnumerator(T[] buffer, int count)
         {
-            _array = array;
+            _buffer = buffer;
             _length = count;
             _index = -1;
         }
         
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -39,11 +44,13 @@ namespace StructForge.Enumerators
             return false;
         }
 
-        T IEnumerator<T>.Current => _array[_index];
-        object IEnumerator.Current => _array[_index];
+        T IEnumerator<T>.Current => Current;
+        object IEnumerator.Current => Current;
 
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _index = -1;
+        /// <inheritdoc/>
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose() { }

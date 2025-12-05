@@ -60,6 +60,31 @@ Install via **NuGet Package Manager**:
 dotnet add package StructForge
 ```
 
+
+### 🎮 For Unity Projects
+StructForge is fully compatible with Unity 2021.3+ and includes .asmdef files.
+
+Method 1: Install via Git URL (Recommended)
+    You can install directly from Unity Package Manager without extra tools.
+
+    Open Unity -> Window -> Package Manager.
+
+    Click the "+" button (top-left) -> "Add package from git URL...".
+
+    Enter the following URL:
+
+    [https://github.com/FurkanKirat/StructForge.git?path=/StructForge](https://github.com/FurkanKirat/StructForge.git?path=/StructForge)
+    Note: The ?path=/StructForge suffix is required because the package source is located in a subdirectory.
+
+Method 2: Install via OpenUPM If you use openupm-cli, run this command in your project folder:
+    
+    Bash
+    openupm add com.kankangames.structforge
+
+Method 3: Manual Installation
+    Download the latest Source Code (zip) from Releases.
+
+Extract the StructForge folder into your Unity project's Packages (or Assets) folder.
 ---
 
 ## 📚 Collections Overview
@@ -67,6 +92,8 @@ dotnet add package StructForge
 ### 🟢 Linear & Spatial (Zero-Allocation)
 
 **`SfList<T>`**: High-performance dynamic array. Supports `AsSpan()`, `RemoveAtSwap` (O(1) removal), and direct array access.
+
+**`**SfEnumSet<TEnum>`**: Bitmask-based set for Enums. Allocates 2x less memory and performs operations up to 1.7x faster than HashSet.
 
 **`SfGrid2D<T>` / `SfGrid3D<T>`**: Cache-friendly spatial grids. Proven to be up to 45% faster than native arrays in complex iterations.
 
@@ -94,10 +121,24 @@ dotnet add package StructForge
 
 ## 💻 Usage Examples
 
-### 1. Zero-Allocation Game Loop
+### 1. High-Performance Enum Flags (New!)
 
+SfEnumSet uses bitwise operations instead of hashing, making it perfect for RPG stats or inventory flags.
+```csharp
+var buffs = new SfEnumSet<Buffs>();
+buffs.Add(Buffs.Haste);
+buffs.Add(Buffs.Strength);
+
+var debuffs = new SfEnumSet<Buffs>(Buffs.Slow);
+
+// Allocates 272 bytes vs 568 bytes (HashSet)
+// Executes ~40% Faster than HashSet.ExceptWith
+buffs.ExceptWith(debuffs);
+```
+### 2. Zero-Allocation Game Loop
 Iterating over `SfList` uses a public struct `Enumerator`, completely avoiding the boxing overhead of `IEnumerable<T>`.
 ```csharp
+
 var entities = new SfList<Entity>(1000);
 // ... populate list ...
 
@@ -108,8 +149,7 @@ foreach (var entity in entities)
 }
 ```
 
-### 2. High-Performance Voxel Check
-
+### 3. High-Performance Voxel Check
 Using `SfBitArray3D` to check 2 million voxels takes microseconds thanks to CPU Intrinsics.
 ```csharp
 // Stores 128x128x128 world (2M blocks) in ~256 KB RAM (vs 2MB for bool[])
@@ -121,8 +161,7 @@ voxels.SetUnchecked(10, 50, 10, true);
 int activeBlocks = voxels.CountTrue(); 
 ```
 
-### 3. Zero-Copy Binary Serialization
-
+### 4. Zero-Copy Binary Serialization
 Since `SfGrid` stores data contiguously, you can cast it to bytes and write to disk instantly without intermediate buffers.
 ```csharp
 public void SaveTerrain(SfGrid2D<int> terrain, Stream stream)
@@ -138,7 +177,7 @@ public void SaveTerrain(SfGrid2D<int> terrain, Stream stream)
 }
 ```
 
-### 4. Ring Buffer for Logs
+### 5. Ring Buffer for Logs
 
 Ideal for scenarios where you need to keep the last N items without generating garbage.
 ```csharp

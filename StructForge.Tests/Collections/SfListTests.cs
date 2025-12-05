@@ -331,5 +331,37 @@ namespace StructForge.Tests.Collections
             Assert.True(total > 0);
             Assert.Equal(0, allocated);
         }
+
+        [Fact]
+        public void RefIndexerTest()
+        {
+            var list = new SfList<SfInt2>([
+                new SfInt2(1,3), 
+                new SfInt2(10,1),
+                new SfInt2(9,0)
+            ]);
+            
+            for (int i = 0; i < list.Count; i++)
+            {
+                list[i].X = 1;
+            }
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                Assert.Equal(1, list[i].X);
+            }
+        }
+
+        private struct SfInt2
+        {
+            public int X;
+            public int Y;
+
+            public SfInt2(int y, int x)
+            {
+                Y = y;
+                X = x;
+            }
+        }
     }
 }

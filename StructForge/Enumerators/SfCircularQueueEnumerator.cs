@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace StructForge.Enumerators
 {
+    /// <inheritdoc/>
     public struct SfCircularQueueEnumerator<T> : IEnumerator<T>
     {
         private readonly T[] _buffer;
@@ -15,10 +16,17 @@ namespace StructForge.Enumerators
         private int _index;
         private int _currentOffset;
         
+        /// <summary>
+        /// Gives the current element's reference
+        /// </summary>
         public ref T Current
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => ref _buffer[_currentOffset];
+            get
+            {
+                ref var baseRef = ref _buffer[0];
+                return ref Unsafe.Add(ref baseRef, _currentOffset);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -32,6 +40,7 @@ namespace StructForge.Enumerators
             _currentOffset = -1;
         }
         
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MoveNext()
         {
@@ -47,6 +56,7 @@ namespace StructForge.Enumerators
             return true;
         }
 
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset()
         {
@@ -54,9 +64,10 @@ namespace StructForge.Enumerators
             _currentOffset = -1;
         }
         
-        T IEnumerator<T>.Current => _buffer[_currentOffset];
-        object IEnumerator.Current => _buffer[_currentOffset];
+        T IEnumerator<T>.Current => Current;
+        object IEnumerator.Current => Current;
 
+        /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         { }

@@ -1,0 +1,21 @@
+{
+  "name": "com.kankangames.structforge",
+  "version": "1.4.0",
+  "displayName": "StructForge",
+  "description": "High-performance, Zero-Allocation, Unsafe data structures for Unity. Includes EnumSet, BitArray3D, Grid and more.",
+  "unity": "2021.3",
+  "author": {
+    "name": "Furkan Kırat",
+    "email": "furkan.kirat01@gmail.com",
+    "url": "https://github.com/FurkanKirat/StructForge"
+  },
+  "keywords": [
+    "performance",
+    "struct",
+    "allocation-free",
+    "unsafe",
+    "collections",
+    "ecs"
+  ],
+  "dependencies": {}
+}

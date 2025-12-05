@@ -173,6 +173,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {
             if (!TryAdd(item))

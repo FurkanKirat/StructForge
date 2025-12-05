@@ -113,6 +113,7 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is negative or greater than or equal to <see cref="_count"/>.</exception>
         public bool this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
                 if ((uint)index >= (uint)_count)
@@ -121,6 +122,7 @@ namespace StructForge.Collections
                 return GetUnchecked(index);
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set
             {
                 if ((uint)index >= (uint)_count)
@@ -153,8 +155,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
-        public bool Contains(bool item) =>
-            Contains(item, SfEqualityComparers<bool>.Default);
+        public bool Contains(bool item) => Contains(item, SfEqualityComparers<bool>.Default);
 
         /// <inheritdoc/>
         public bool Contains(bool item, IEqualityComparer<bool> comparer)
@@ -191,12 +192,14 @@ namespace StructForge.Collections
         /// <summary>
         /// Clears all bits in the array (sets them to false).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() =>
             Array.Clear(_bits, 0, _bits.Length);
 
         /// <summary>
         /// Inverts all bits in the array (true becomes false, false becomes true).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Not()
         {
             for (int i = 0; i < _bits.Length; i++)
@@ -210,6 +213,7 @@ namespace StructForge.Collections
         /// </summary>
         /// <param name="other">The bit array to AND with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void And(SfBitArray other)
         {
             if (other is null)
@@ -235,12 +239,48 @@ namespace StructForge.Collections
             for (i = length; i < _bits.Length; i++)
                 _bits[i] = 0;
         }
+        
+        /// <summary>
+        /// Performs a bitwise AND operation with another bit array.
+        /// Bits beyond the shorter array become false.
+        /// </summary>
+        /// <param name="other">The bit array to AND with.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AndNot(SfBitArray other)
+        {
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+
+            int length = Math.Min(_bits.Length, other._bits.Length);
+
+            int i = 0;
+            for (; i <= length - 4; i += 4)
+            {
+                _bits[i] &=~ other._bits[i];
+                _bits[i + 1] &=~ other._bits[i + 1];
+                _bits[i + 2] &=~ other._bits[i + 2];
+                _bits[i + 3] &=~ other._bits[i + 3];
+            }
+            
+            for (; i < length; i++)
+            {
+                _bits[i] &=~ other._bits[i];
+            }
+
+            // Zero out extra blocks (AND identity)
+            for (; i < length; i++)
+            {
+                _bits[i] &= ~other._bits[i];
+            }
+        }
 
         /// <summary>
         /// Performs a bitwise OR operation with another bit array.
         /// </summary>
         /// <param name="other">The bit array to OR with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Or(SfBitArray other)
         {
             if (other is null)
@@ -258,6 +298,7 @@ namespace StructForge.Collections
         /// </summary>
         /// <param name="other">The bit array to XOR with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Xor(SfBitArray other)
         {
             if (other is null)
@@ -274,6 +315,7 @@ namespace StructForge.Collections
         /// Counts how many bits are set to true using fast bit manipulation.
         /// </summary>
         /// <returns>The number of true bits in the array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CountTrue()
         {
             ulong count = 0;
@@ -288,6 +330,7 @@ namespace StructForge.Collections
         /// Counts how many bits are set to false using fast bit manipulation.
         /// </summary>
         /// <returns>The number of false bits in the array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CountFalse()
         {
             return _count - CountTrue();
@@ -332,6 +375,7 @@ namespace StructForge.Collections
         /// 
         /// Performance: ~5-10x faster than naive bit-by-bit counting for 32-bit values
         /// </remarks>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static ulong PopCount(ulong i)
         {
             i = i - ((i >> 1) & 0x5555555555555555UL);
@@ -370,11 +414,8 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool GetUnchecked(int index)
         {
-            int arrayIndex = index >> 6;
-            int bitIndex = index & 63;
-
-            ulong mask = 1UL << bitIndex;
-            return (_bits[arrayIndex] & mask) != 0;
+            ulong block = _bits[index >> 6];
+            return (block & (1UL << (index & 63))) != 0;
         }
 
         /// <summary>
@@ -385,15 +426,12 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetUnchecked(int index, bool value)
         {
-            int arrayIndex = index >> 6;
-            int bitIndex = index & 63;
-
-            ulong mask = 1UL << bitIndex;
+            ulong mask = 1UL << index;
 
             if (value)
-                _bits[arrayIndex] |= mask;
+                _bits[index >> 6] |= mask;
             else
-                _bits[arrayIndex] &= ~mask;
+                _bits[index >> 6] &= ~mask;
         }
         
         /// <summary>
@@ -407,10 +445,11 @@ namespace StructForge.Collections
             if (remaining > 0)
             {
                 ulong mask = (1UL << remaining) - 1;
-                _bits[_bits.Length - 1] &= mask;
+                _bits[^1] &= mask;
             }
         }
         
+        /// <inheritdoc/>
         public struct SfBitArrayEnumerator : IEnumerator<bool>
         {
             private readonly SfBitArray _bitArray;
@@ -427,6 +466,7 @@ namespace StructForge.Collections
                 _currentWord = 0;
             }
             
+            /// <inheritdoc/>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -443,6 +483,7 @@ namespace StructForge.Collections
                 return true;
             }
 
+            /// <inheritdoc/>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset()
             {
@@ -451,6 +492,7 @@ namespace StructForge.Collections
                 _currentWord = 0;
             }
             
+            /// <inheritdoc/>
             public bool Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -459,6 +501,7 @@ namespace StructForge.Collections
 
             object IEnumerator.Current => Current;
 
+            /// <inheritdoc/>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
         }

@@ -6,11 +6,12 @@
 		<LangVersion>latest</LangVersion>
 		
 		<Nullable>disable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>StructForge</PackageId>
-		<Version>1.3.2</Version>
+		<Version>1.4.0</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		
@@ -22,11 +23,26 @@
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
 		
-		<PackageReleaseNotes>v1.3.2 - Critical Bug Fix Update:
-🐛 Bug Fixes:
-- Fixed a critical logic error in `SfBitArray.CountTrue()` where 64-bit integers were incorrectly masked with 32-bit masks, resulting in incorrect population counts.
-- The fix utilizes a corrected 64-bit SWAR algorithm, ensuring both accuracy and high performance across all platforms (including Unity/.NET Standard 2.1).
-- Added AsReadOnlySpan{T} methods
+		<PackageReleaseNotes>### 🚀 Major Release v1.4.0
+
+This release introduces full **Unity Game Engine** support via OpenUPM and adds the high-performance **SfEnumSet** collection.
+
+#### ✨ New Features
+* **Unity Support:** Added `package.json` and `.asmdef` definitions. The library is now fully compatible with Unity 2021.3+ and can be installed via **OpenUPM** or Git URL.
+* **SfEnumSet<T>:** A new zero-allocation set specifically for Enums. Uses bitwise operations instead of hashing.
+    * **Performance:** ~1.7x faster than `HashSet<Enum>`.
+    * **Memory:** Allocates up to 2x less memory.
+    * Includes new constructor `SfEnumSet(ulong[] buffer)` for easy serialization.
+
+#### ⚡ Performance Optimizations
+* **SfBitArray & SfGrid:** Implemented `Unsafe` address arithmetic for `GetUnchecked` / `SetUnchecked` methods, bypassing JIT bounds checks for maximum speed in tight loops.
+* **SfList:** Reverted enumerator logic to standard array access to enable JIT optimizations (Loop Unrolling & Bounds Check Elimination).
+
+#### 📦 Installation
+
+**For Unity (OpenUPM):**
+```bash
+openupm add com.kankangames.structforge
 		</PackageReleaseNotes>
 		
 		<PackageReadmeFile>README.md</PackageReadmeFile>
@@ -34,6 +50,10 @@
 	
 	<ItemGroup>
 		<None Include="..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.1.2" />
 	</ItemGroup>
 
 </Project>

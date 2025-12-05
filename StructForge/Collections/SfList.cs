@@ -64,7 +64,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfList(int capacity = DefaultCapacity, float growthFactor = DefaultGrowthFactor)
         {
-            if (capacity < 0)
+            if (capacity <= 0)
                 SfThrowHelper.ThrowArgumentOutOfRange(nameof(capacity));
             
             _buffer = new T[capacity];
@@ -143,7 +143,8 @@ namespace StructForge.Collections
         public void Add(T item)
         {
             ReGrowthIfNeeded();
-            _buffer[_count++] = item;
+            ref var baseRef = ref _buffer[0];
+            Unsafe.Add(ref baseRef, _count++) = item; 
         }
         
         /// <summary>
@@ -218,19 +219,17 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Remove(T item)
         {
-            for (int i = 0; i < _count; i++)
+            int index = Array.IndexOf(_buffer, item, 0, _count);
+            if (index < 0) 
+                return false;
+            
+            ref var baseRef = ref _buffer[0];
+            for (int j = index; j < _count - 1; j++)
             {
-                if (item?.Equals(_buffer[i]) == true)
-                {
-                    // Shift all elements left
-                    for (int j = i; j < _count - 1; j++)
-                        _buffer[j] = _buffer[j + 1];
-
-                    _buffer[--_count] = default; // Clear last slot
-                    return true;
-                }
+                Unsafe.Add(ref baseRef, j) = Unsafe.Add(ref baseRef, j + 1);
             }
-            return false;
+            Unsafe.Add(ref baseRef, --_count) = default; // Clear last slot
+            return true;
         }
 
 
@@ -255,7 +254,8 @@ namespace StructForge.Collections
                 Array.Copy(_buffer, index, _buffer, index + 1, _count - index);
             }
 
-            _buffer[index] = item;
+            ref var baseRef = ref _buffer[0];
+            Unsafe.Add(ref baseRef, index) = item;
             _count++;
         }
 
@@ -269,8 +269,8 @@ namespace StructForge.Collections
             if (index < _count)
                 Array.Copy(_buffer, index + 1, _buffer, index, _count - index);
             
-
-            _buffer[_count] = default;
+            ref var baseRef = ref _buffer[0];
+            Unsafe.Add(ref baseRef, _count) = default;
         }
         
         /// <summary>
@@ -284,12 +284,13 @@ namespace StructForge.Collections
 
             _count--;
             
+            ref var baseRef = ref _buffer[0];
             if (index < _count)
             {
-                _buffer[index] = _buffer[_count];
+                Unsafe.Add(ref baseRef, index) = Unsafe.Add(ref baseRef, _count);
             }
 
-            _buffer[_count] = default;
+            Unsafe.Add(ref baseRef, _count) = default;
         }
 
         /// <summary>
@@ -309,10 +310,9 @@ namespace StructForge.Collections
         /// <returns>Index of the specified item, if not found -1.</returns>
         public int BinarySearch(T item)
         {
-            return Array.BinarySearch(_buffer, 0, _count, item, null);
+            return Array.BinarySearch(_buffer, 0, _count, item, SfComparers<T>.DefaultComparer);
         }
-
-
+        
         /// <summary>
         /// Searchs the specified item with O(logn), to working properly the list should be sorted.
         /// </summary>
@@ -338,28 +338,43 @@ namespace StructForge.Collections
             if ((uint)j >= (uint)_count)
                 SfThrowHelper.ThrowArgumentOutOfRange(nameof(j));
             
-            (_buffer[i], _buffer[j]) = (_buffer[j], _buffer[i]);
+            ref var baseRef = ref _buffer[0];
+            ref var temp = ref Unsafe.Add(ref baseRef, i);
+            Unsafe.Add(ref baseRef, i) = Unsafe.Add(ref baseRef, j);
+            Unsafe.Add(ref baseRef, j) = temp;
+        }
+
+        /// <summary>
+        /// Reference indexer for SfList class
+        /// </summary>
+        /// <param name="index"></param>
+        public ref T this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => ref _buffer[index];
         }
 
         /// <inheritdoc/>
-        public T this[int index]
+        T IList<T>.this[int index]
         {
             get
             {
                 if ((uint)index >= (uint)_count) 
                     SfThrowHelper.ThrowArgumentOutOfRange(nameof(index));
                 
-                return _buffer[index];
+                ref var baseRef = ref _buffer[0];
+                return Unsafe.Add(ref baseRef, index); 
             }
             set
             {
                 if ((uint)index >= (uint)_count) 
                     SfThrowHelper.ThrowArgumentOutOfRange(nameof(index));
                 
-                _buffer[index] = value;
+                ref var baseRef = ref _buffer[0];
+                Unsafe.Add(ref baseRef, index) = value; 
             }
         }
-
+        
         /// <summary>
         /// Gets & Sets the first element of the array
         /// </summary>
@@ -413,14 +428,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Reverses the order of elements in the list in-place.
         /// </summary>
-        public void Reverse()
-        {
-            for (int i = 0; i < _count / 2; i++)
-            {
-                int  j = _count - i - 1;
-                (_buffer[i],  _buffer[j]) = (_buffer[j], _buffer[i]);
-            }
-        }
+        public void Reverse() => Array.Reverse(_buffer, 0, _count);
         
         /// <summary>
         /// Determines whether any element matches the specified predicate.

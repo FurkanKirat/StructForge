@@ -138,6 +138,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => _heap.Clear();
 
         /// <inheritdoc/>
@@ -163,6 +164,4 @@ namespace StructForge.Collections
         }
 
     }
-
-    
 }

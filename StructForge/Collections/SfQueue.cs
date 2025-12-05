@@ -129,6 +129,7 @@ namespace StructForge.Collections
         #region Core Methods
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Enqueue(T item)
         {
             GrowIfNeeded(_count + 1);
@@ -137,6 +138,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Dequeue()
         {
             if (TryDequeue(out T item)) return item;
@@ -145,6 +147,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek()
         {
             if (TryPeek(out T item)) return item;
@@ -153,6 +156,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryDequeue(out T item)
         {
             if (IsEmpty)
@@ -169,6 +173,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPeek(out T item)
         {
             if (IsEmpty)
@@ -243,6 +248,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T PeekLast()
         {
             if (IsEmpty) 
@@ -253,6 +259,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryPeekLast(out T item)
         {
             if (IsEmpty)

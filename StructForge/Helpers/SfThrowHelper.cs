@@ -37,6 +37,13 @@ namespace StructForge.Helpers
         
         [MethodImpl(MethodImplOptions.NoInlining)]
         [DoesNotReturn]
+        public static void ThrowNotSupported(string message = null)
+        {
+            throw new NotSupportedException(message);
+        }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        [DoesNotReturn]
         public static void ThrowKeyNotFound(string message = null)
         {
             throw new KeyNotFoundException(message);

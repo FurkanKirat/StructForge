@@ -19,7 +19,7 @@ namespace StructForge.Collections
         /// <summary>
         /// The underlying linear array that stores the 3D grid data.
         /// </summary>
-        private T[] _buffer;
+        private readonly T[] _buffer;
         
         /// <summary>
         /// Gets the width (X dimension) of the grid.
@@ -70,8 +70,6 @@ namespace StructForge.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => Count == 0;
         }
-        
-        
         
         /// <summary>
         /// Initializes a new instance of the <see cref="SfGrid3D{T}"/> class with the specified dimensions.
@@ -162,7 +160,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when any coordinate is outside the valid bounds.</exception>
         public T this[int x, int y, int z]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer[CheckedIndex(x, y, z)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _buffer[CheckedIndex(x, y, z)] = value;
         }
 
@@ -174,7 +174,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the index is outside the valid bounds.</exception>
         public T this[int index]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer[CheckedIndex(index)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _buffer[CheckedIndex(index)] = value;
         }
 
@@ -186,6 +188,7 @@ namespace StructForge.Collections
         /// <param name="z">The Z coordinate (depth index).</param>
         /// <param name="value">When this method returns, contains the element at the specified coordinate if found; otherwise, the default value.</param>
         /// <returns><c>true</c> if the coordinates are within bounds; otherwise, <c>false</c>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGet(int x, int y, int z, out T value)
         {
             if (IsInBounds(x, y, z))
@@ -220,10 +223,7 @@ namespace StructForge.Collections
         /// <param name="z">The Z coordinate (depth index).</param>
         /// <returns>A reference to the element at the specified coordinate.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ref T GetUnsafeRef(int x, int y, int z)
-        {
-            return ref _buffer[ToIndex(x,y,z)];
-        }
+        public ref T GetUnsafeRef(int x, int y, int z) => ref _buffer[ToIndex(x, y, z)];
         
         /// <summary>
         /// Sets the element at the specified 3D coordinate without bounds checking.
@@ -233,10 +233,7 @@ namespace StructForge.Collections
         /// <param name="z">The Z coordinate (depth index).</param>
         /// <param name="value">The value to set.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetUnchecked(int x, int y, int z, T value)
-        {
-            _buffer[ToIndex(x,y,z)] = value;
-        }
+        public void SetUnsafe(int x, int y, int z, T value) => _buffer[ToIndex(x, y, z)] = value;
 
         /// <summary>
         /// Converts 3D coordinates to a linear array index.
@@ -347,6 +344,7 @@ namespace StructForge.Collections
         /// <summary>
         /// Clears all elements in the grid (sets them to their default value).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => Array.Clear(_buffer, 0, _buffer.Length);
 
         /// <inheritdoc/>

@@ -95,6 +95,7 @@ namespace StructForge.Collections
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {
             if (!TryAdd(item))
@@ -102,21 +103,27 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryAdd(T item) => _tree.TryAdd(item);
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(T item) => _tree.Remove(item);
 
         /// <inheritdoc cref="ISfDataStructure{T}.Clear" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => _tree.Clear();
 
         /// <inheritdoc cref="ISfDataStructure{T}.Contains(T)" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item) => _tree.Contains(item);
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item, IEqualityComparer<T> comparer) => _tree.Contains(item, comparer);
 
         /// <inheritdoc cref="ISfDataStructure{T}.CopyTo" />
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(T[] array, int arrayIndex) => _tree.CopyTo(array, arrayIndex);
 
         /// <inheritdoc/>
@@ -128,9 +135,11 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ForEach(Action<T> action) => _tree.ForEach(action);
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(T equalValue, out T actualValue) => _tree.TryGetValue(equalValue, out actualValue);
 
         // -------------------------------------------------------------------

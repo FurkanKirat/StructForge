@@ -224,7 +224,9 @@ namespace StructForge.Collections
         /// <exception cref="ArgumentOutOfRangeException">Thrown when any coordinate is outside the valid bounds.</exception>
         public bool this[int x, int y, int z]
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer[IndexSafe(x, y, z)];
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             set => _buffer[IndexSafe(x, y, z)] = value;
         }
 
@@ -237,20 +239,25 @@ namespace StructForge.Collections
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ForEach(Action<bool> action) => _buffer.ForEach(action);
 
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(bool item) => _buffer.Contains(item);
         
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(bool item, IEqualityComparer<bool> comparer) => _buffer.Contains(item, comparer);
         
         /// <summary>
         /// Clears all bits in the array (sets them to false).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear() => _buffer.Clear();
         
         /// <inheritdoc/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyTo(bool[] array, int arrayIndex) => _buffer.CopyTo(array, arrayIndex);
 
         /// <inheritdoc/>
@@ -265,18 +272,21 @@ namespace StructForge.Collections
         /// Sets all bits in the array to the specified value.
         /// </summary>
         /// <param name="value">The value to set all bits to.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetAll(bool value) => _buffer.SetAll(value);
 
         /// <summary>
         /// Counts the number of bits set to true.
         /// </summary>
         /// <returns>The number of true bits in the array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CountTrue() => _buffer.CountTrue();
         
         /// <summary>
         /// Counts the number of bits set to false.
         /// </summary>
         /// <returns>The number of false bits in the array.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CountFalse() => _buffer.CountFalse();
         
         /// <summary>
@@ -286,11 +296,13 @@ namespace StructForge.Collections
         /// <param name="y">The Y coordinate (row index).</param>
         /// <param name="z">The Z coordinate (depth index).</param>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when any coordinate is outside the valid bounds.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Toggle(int x, int y, int z) => _buffer.Toggle(IndexSafe(x, y, z));
         
         /// <summary>
         /// Inverts all bits in the array (true becomes false, false becomes true).
         /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Not() => _buffer.Not();
         
         /// <summary>
@@ -300,6 +312,7 @@ namespace StructForge.Collections
         /// <param name="other">The bit array to AND with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void And(SfBitArray3D other)
         {
             if (other is null)
@@ -312,12 +325,32 @@ namespace StructForge.Collections
         }
         
         /// <summary>
+        /// Performs a bitwise AND NOT operation with another 3D bit array.
+        /// Both arrays must have the same dimensions.
+        /// </summary>
+        /// <param name="other">The bit array to AND NOT with.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AndNot(SfBitArray3D other)
+        {
+            if (other is null)
+                SfThrowHelper.ThrowArgumentNull(nameof(other));
+
+            if (_width != other._width || _height != other._height  || _depth != other._depth)
+                SfThrowHelper.ThrowArgument("BitArray3D sizes must match.");
+
+            _buffer.AndNot(other._buffer);
+        }
+        
+        /// <summary>
         /// Performs a bitwise OR operation with another 3D bit array.
         /// Both arrays must have the same dimensions.
         /// </summary>
         /// <param name="other">The bit array to OR with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Or(SfBitArray3D other)
         {
             if (other is null)
@@ -336,6 +369,7 @@ namespace StructForge.Collections
         /// <param name="other">The bit array to XOR with.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="other"/> is null.</exception>
         /// <exception cref="ArgumentException">Thrown when the dimensions of the arrays do not match.</exception>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Xor(SfBitArray3D other)
         {
             if (other is null)
