@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2025-12-03-20-27-44</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.5, Windows 11 (10.0.26200.7309)
+13th Gen Intel Core i7-13650HX 2.60GHz, 1 CPU, 20 logical and 14 physical cores
+.NET SDK 8.0.403
+  [Host]   : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v3
+  QuickRun : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>Job=QuickRun  InvocationCount=16  IterationCount=3  
+LaunchCount=1  WarmupCount=1  
+</code></pre>
+
+<table>
+<thead><tr><th>Method                     </th><th>Count</th><th>Mean     </th><th>Error  </th><th>StdDev </th><th>Rank</th><th>Allocated</th>
+</tr>
+</thead><tbody><tr><td>SystemList_Foreach</td><td>10000</td><td>9,640.62 ns</td><td>17,046.76 ns</td><td>934.391 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfSafeList_Foreach</td><td>10000</td><td>8,081.25 ns</td><td>3,759.31 ns</td><td>206.061 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfList_Foreach</td><td>10000</td><td>8,231.25 ns</td><td>5,128.51 ns</td><td>281.111 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SystemList_AsSpan_Sum</td><td>10000</td><td>6,400.00 ns</td><td>8,721.85 ns</td><td>478.074 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfSafeList_AsSpan_Sum</td><td>10000</td><td>7,298.96 ns</td><td>28,492.21 ns</td><td>1,561.754 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfList_AsSpan_Sum</td><td>10000</td><td>6,470.83 ns</td><td>10,798.75 ns</td><td>591.916 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SystemList_Reverse</td><td>10000</td><td>656.25 ns</td><td>1,314.98 ns</td><td>72.079 ns</td><td>2</td><td>-</td>
+</tr><tr><td>SfSafeList_Reverse</td><td>10000</td><td>784.38 ns</td><td>634.85 ns</td><td>34.799 ns</td><td>2</td><td>-</td>
+</tr><tr><td>SfList_Reverse</td><td>10000</td><td>791.67 ns</td><td>800.87 ns</td><td>43.899 ns</td><td>2</td><td>-</td>
+</tr><tr><td>SfSafeList_Swap</td><td>10000</td><td>10,289.58 ns</td><td>7,242.35 ns</td><td>396.978 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfList_Swap</td><td>10000</td><td>8,902.08 ns</td><td>8,828.03 ns</td><td>483.894 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SystemList_RemoveAtSwap_Simulated</td><td>10000</td><td>104.17 ns</td><td>131.66 ns</td><td>7.217 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SfList_RemoveAtSwap</td><td>10000</td><td>97.92 ns</td><td>174.17 ns</td><td>9.547 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SfSafeList_RemoveAtSwap</td><td>10000</td><td>102.08 ns</td><td>65.83 ns</td><td>3.608 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SystemList_InsertAtZero</td><td>10000</td><td>81,687.50 ns</td><td>160,645.02 ns</td><td>8,805.496 ns</td><td>6</td><td>-</td>
+</tr><tr><td>SfList_InsertAtZero</td><td>10000</td><td>563,270.83 ns</td><td>169,747.61 ns</td><td>9,304.439 ns</td><td>7</td><td>5002 B</td>
+</tr><tr><td>SfSafeList_InsertAtZero</td><td>10000</td><td>84,125.00 ns</td><td>128,399.16 ns</td><td>7,037.991 ns</td><td>6</td><td>-</td>
+</tr><tr><td>SystemList_Foreach</td><td>100000</td><td>62,414.58 ns</td><td>17,632.85 ns</td><td>966.516 ns</td><td>5</td><td>-</td>
+</tr><tr><td>SfSafeList_Foreach</td><td>100000</td><td>52,604.17 ns</td><td>163,830.62 ns</td><td>8,980.109 ns</td><td>5</td><td>-</td>
+</tr><tr><td>SfList_Foreach</td><td>100000</td><td>47,535.42 ns</td><td>31,482.47 ns</td><td>1,725.660 ns</td><td>5</td><td>-</td>
+</tr><tr><td>SystemList_AsSpan_Sum</td><td>100000</td><td>32,520.83 ns</td><td>7,439.82 ns</td><td>407.802 ns</td><td>4</td><td>-</td>
+</tr><tr><td>SfSafeList_AsSpan_Sum</td><td>100000</td><td>32,273.96 ns</td><td>10,589.03 ns</td><td>580.421 ns</td><td>4</td><td>-</td>
+</tr><tr><td>SfList_AsSpan_Sum</td><td>100000</td><td>31,375.00 ns</td><td>11,189.98 ns</td><td>613.360 ns</td><td>4</td><td>-</td>
+</tr><tr><td>SystemList_Reverse</td><td>100000</td><td>7,538.54 ns</td><td>12,212.92 ns</td><td>669.431 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfSafeList_Reverse</td><td>100000</td><td>8,652.08 ns</td><td>7,078.94 ns</td><td>388.020 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfList_Reverse</td><td>100000</td><td>7,220.83 ns</td><td>3,299.46 ns</td><td>180.854 ns</td><td>3</td><td>-</td>
+</tr><tr><td>SfSafeList_Swap</td><td>100000</td><td>56,781.25 ns</td><td>41,681.24 ns</td><td>2,284.689 ns</td><td>5</td><td>-</td>
+</tr><tr><td>SfList_Swap</td><td>100000</td><td>53,806.25 ns</td><td>5,696.60 ns</td><td>312.250 ns</td><td>5</td><td>-</td>
+</tr><tr><td>SystemList_RemoveAtSwap_Simulated</td><td>100000</td><td>95.83 ns</td><td>329.16 ns</td><td>18.042 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SfList_RemoveAtSwap</td><td>100000</td><td>97.92 ns</td><td>263.33 ns</td><td>14.434 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SfSafeList_RemoveAtSwap</td><td>100000</td><td>95.83 ns</td><td>174.17 ns</td><td>9.547 ns</td><td>1</td><td>-</td>
+</tr><tr><td>SystemList_InsertAtZero</td><td>100000</td><td>539,777.08 ns</td><td>111,019.81 ns</td><td>6,085.370 ns</td><td>7</td><td>-</td>
+</tr><tr><td>SfList_InsertAtZero</td><td>100000</td><td>3,732,400.00 ns</td><td>499,737.49 ns</td><td>27,392.298 ns</td><td>8</td><td>50002 B</td>
+</tr><tr><td>SfSafeList_InsertAtZero</td><td>100000</td><td>543,797.92 ns</td><td>112,443.38 ns</td><td>6,163.401 ns</td><td>7</td><td>-</td>
+</tr></tbody></table>
+</body>
+</html>

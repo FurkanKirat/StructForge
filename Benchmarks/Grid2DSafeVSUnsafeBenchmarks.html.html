@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+<meta charset='utf-8' />
+<title>BenchmarkRun-joined-2025-12-03-21-15-21</title>
+
+<style type="text/css">
+	table { border-collapse: collapse; display: block; width: 100%; overflow: auto; }
+	td, th { padding: 6px 13px; border: 1px solid #ddd; text-align: right; }
+	tr { background-color: #fff; border-top: 1px solid #ccc; }
+	tr:nth-child(even) { background: #f8f8f8; }
+</style>
+</head>
+<body>
+<pre><code>
+BenchmarkDotNet v0.15.5, Windows 11 (10.0.26200.7309)
+13th Gen Intel Core i7-13650HX 2.60GHz, 1 CPU, 20 logical and 14 physical cores
+.NET SDK 8.0.403
+  [Host]   : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v3
+  QuickRun : .NET 8.0.22 (8.0.22, 8.0.2225.52707), X64 RyuJIT x86-64-v3
+</code></pre>
+<pre><code>Job=QuickRun  InvocationCount=16  IterationCount=3  
+LaunchCount=1  WarmupCount=1  
+</code></pre>
+
+<table>
+<thead><tr><th>Method        </th><th>Size</th><th>Mean</th><th>Error</th><th>StdDev</th><th>Ratio</th><th>RatioSD</th><th>Rank</th><th>Allocated</th><th>Alloc Ratio</th>
+</tr>
+</thead><tbody><tr><td>Safe_Indexer_Read</td><td>1024</td><td>1.957 ms</td><td>2.0293 ms</td><td>0.1112 ms</td><td>1.00</td><td>0.07</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Unsafe_Indexer_Read</td><td>1024</td><td>2.001 ms</td><td>2.7856 ms</td><td>0.1527 ms</td><td>1.02</td><td>0.08</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Safe_GetRef_Read</td><td>1024</td><td>1.563 ms</td><td>1.0751 ms</td><td>0.0589 ms</td><td>0.80</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Unsafe_GetRef_Read</td><td>1024</td><td>1.803 ms</td><td>0.2186 ms</td><td>0.0120 ms</td><td>0.92</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Safe_Indexer_Write</td><td>1024</td><td>1.857 ms</td><td>0.8066 ms</td><td>0.0442 ms</td><td>0.95</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Unsafe_Indexer_Write</td><td>1024</td><td>1.880 ms</td><td>0.4705 ms</td><td>0.0258 ms</td><td>0.96</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Safe_Indexer_Read</td><td>4096</td><td>9.950 ms</td><td>7.7345 ms</td><td>0.4240 ms</td><td>1.00</td><td>0.05</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Unsafe_Indexer_Read</td><td>4096</td><td>9.777 ms</td><td>1.6569 ms</td><td>0.0908 ms</td><td>0.98</td><td>0.04</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Safe_GetRef_Read</td><td>4096</td><td>7.394 ms</td><td>2.6594 ms</td><td>0.1458 ms</td><td>0.74</td><td>0.03</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Unsafe_GetRef_Read</td><td>4096</td><td>7.916 ms</td><td>2.8076 ms</td><td>0.1539 ms</td><td>0.80</td><td>0.03</td><td>1</td><td>-</td><td>NA</td>
+</tr><tr><td>Safe_Indexer_Write</td><td>4096</td><td>6.326 ms</td><td>1.5843 ms</td><td>0.0868 ms</td><td>0.64</td><td>0.03</td><td>1</td><td>21 B</td><td>NA</td>
+</tr><tr><td>Unsafe_Indexer_Write</td><td>4096</td><td>6.342 ms</td><td>0.9985 ms</td><td>0.0547 ms</td><td>0.64</td><td>0.02</td><td>1</td><td>-</td><td>NA</td>
+</tr></tbody></table>
+</body>
+</html>
