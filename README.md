@@ -1,6 +1,6 @@
 # StructForge
 
-[![StructForge v1.4 Demo](https://img.youtube.com/vi/7c7Pez6-VSE/0.jpg)](https://www.youtube.com/watch?v=7c7Pez6-VSE)
+[![StructForge v1.4 Demo](https://raw.githubusercontent.com/FurkanKirat/StructForge/main/Icons/video.jpg)](https://www.youtube.com/watch?v=7c7Pez6-VSE)
 > *Watch: Benchmarking C# Safe Arrays vs Unsafe Pointers (and why Safe won).*
 
 [![NuGet Downloads](https://img.shields.io/nuget/dt/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
