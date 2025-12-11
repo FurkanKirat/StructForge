@@ -331,7 +331,19 @@ namespace StructForge.Tests.Collections
             Assert.True(total > 0);
             Assert.Equal(0, allocated);
         }
+        
+        private struct SfInt2
+        {
+            public int X;
+            public int Y;
 
+            public SfInt2(int y, int x)
+            {
+                Y = y;
+                X = x;
+            }
+        }
+        
         [Fact]
         public void RefIndexerTest()
         {
@@ -352,16 +364,6 @@ namespace StructForge.Tests.Collections
             }
         }
 
-        private struct SfInt2
-        {
-            public int X;
-            public int Y;
-
-            public SfInt2(int y, int x)
-            {
-                Y = y;
-                X = x;
-            }
-        }
+      
     }
 }

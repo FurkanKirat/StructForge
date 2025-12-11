@@ -440,7 +440,7 @@ namespace StructForge.Collections
 
     /// <summary>Represents a node in a doubly linked list.</summary>
     /// <typeparam name="T">Type of value stored in the node.</typeparam>
-    public class SfLinkedListNode<T>
+    public sealed class SfLinkedListNode<T>
     {
         /// <summary>The value stored in the node.</summary>
         public T Value;

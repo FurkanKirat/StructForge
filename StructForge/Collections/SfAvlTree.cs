@@ -679,7 +679,7 @@ namespace StructForge.Collections
     /// <summary>
     /// Provides a custom debugger view for <see cref="SfAvlTree{T}"/> displaying elements in-order.
     /// </summary>
-    internal class SfTreeDebugView<T>
+    internal sealed class SfTreeDebugView<T>
     {
         private readonly SfAvlTree<T> _tree;
         public SfTreeDebugView(SfAvlTree<T> tree) { _tree = tree; }

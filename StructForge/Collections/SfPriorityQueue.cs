@@ -113,6 +113,20 @@ namespace StructForge.Collections
             while (!copy.IsEmpty)
                 yield return copy.Pop().item;
         }
+        
+        /// <summary>
+        /// Returns the underlying data array as span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Span<(TItem item, TPriority priority)> AsSpan() => _heap.AsSpan();
+
+        /// <summary>
+        /// Returns the underlying data array as readonly span.
+        /// </summary>
+        /// <returns>The internal array containing the grid data.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ReadOnlySpan<(TItem item, TPriority priority)> AsReadOnlySpan() => _heap.AsReadOnlySpan();
 
         /// <inheritdoc/>
         public void ForEach(Action<TItem> action)

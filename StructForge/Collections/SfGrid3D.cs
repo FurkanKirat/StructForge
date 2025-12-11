@@ -311,20 +311,12 @@ namespace StructForge.Collections
         /// Fills the entire grid with the specified value.
         /// </summary>
         /// <param name="value">The value to fill the grid with.</param>
-        public void Fill(T value)
-        {
-            for (int i = 0; i < _buffer.Length; i++)
-                _buffer[i] = value;
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Fill(T value) => Array.Fill(_buffer, value);
         
         /// <inheritdoc/>
-        public void ForEach(Action<T> action)
-        {
-            for (int i = 0; i < Count; i++)
-            {
-                action(_buffer[i]);
-            }
-        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ForEach(Action<T> action) => Array.ForEach(_buffer, action);
 
         /// <inheritdoc/>
         public bool Contains(T item) => Contains(item, SfEqualityComparers<T>.Default);
@@ -357,8 +349,7 @@ namespace StructForge.Collections
             if (arrayIndex + Count > array.Length) 
                 SfThrowHelper.ThrowArgument("Destination array is not large enough.");
 
-            for (int i = 0; i < Count; i++)
-                array[arrayIndex++] = _buffer[i];
+            Array.Copy(_buffer, 0, array, arrayIndex, Count);
         }
 
         /// <inheritdoc/>

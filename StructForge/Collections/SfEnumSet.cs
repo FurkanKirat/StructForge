@@ -12,7 +12,7 @@ namespace StructForge.Collections
 /// .net's HashSet for enums
 /// </summary>
 /// <typeparam name="TEnum">The enum type of the enum set</typeparam>
-public class SfEnumSet<TEnum> : ISfSet<TEnum>, ICollection<TEnum> where TEnum : Enum
+public sealed class SfEnumSet<TEnum> : ISfSet<TEnum>, ICollection<TEnum> where TEnum : Enum
 {
     private readonly SfBitArray _bits;
     private int _count;
@@ -113,6 +113,13 @@ public class SfEnumSet<TEnum> : ISfSet<TEnum>, ICollection<TEnum> where TEnum : 
     /// <returns>The internal array containing the grid data.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<ulong> AsSpan() => _bits.AsSpan();
+    
+    /// <summary>
+    /// Returns the underlying data array as readonly span.
+    /// </summary>
+    /// <returns>The internal array containing the grid data.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public ReadOnlySpan<ulong> AsReadOnlySpan() =>_bits.AsReadOnlySpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public SfEnumSetEnumerator GetEnumerator() => new SfEnumSetEnumerator(this);
