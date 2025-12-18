@@ -4,6 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace StructForge.Comparers
 {
+    /// <summary>
+    /// Provides commonly used <see cref="IEqualityComparer{String}"/> instances for different string comparison strategies.
+    /// Includes ordinal, invariant culture, case-insensitive, and length-based comparers.
+    /// </summary>
     public static class SfStringEqualityComparers
     {
         // --- BACKING FIELDS ---
@@ -15,30 +19,45 @@ namespace StructForge.Comparers
 
         // --- PROPERTIES ---
 
+        /// <summary>
+        /// Gets an ordinal <see cref="IEqualityComparer{String}"/> that performs a case-sensitive comparison.
+        /// </summary>
         public static IEqualityComparer<string> Ordinal
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ordinal;
         }
 
+        /// <summary>
+        /// Gets an ordinal <see cref="IEqualityComparer{String}"/> that performs a case-insensitive comparison.
+        /// </summary>
         public static IEqualityComparer<string> OrdinalIgnoreCase
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _ordinalIgnoreCase;
         }
 
+        /// <summary>
+        /// Gets an invariant culture <see cref="IEqualityComparer{String}"/> that performs a case-sensitive comparison.
+        /// </summary>
         public static IEqualityComparer<string> InvariantCulture
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _invariant;
         }
 
+        /// <summary>
+        /// Gets an invariant culture <see cref="IEqualityComparer{String}"/> that performs a case-insensitive comparison.
+        /// </summary>
         public static IEqualityComparer<string> InvariantCultureIgnoreCase
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _invariantIgnoreCase;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IEqualityComparer{String}"/> that considers strings equal if they have the same length.
+        /// </summary>
         public static IEqualityComparer<string> Length
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

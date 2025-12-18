@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -13,6 +14,8 @@ namespace StructForge.Collections
     /// Provides fast indexed access and efficient memory layout for 2D data structures.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the grid.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfGrid2DDebugView<>))]
     public sealed class SfGrid2D<T> : ISfDataStructure<T>
     {
         private readonly int _width, _height;
@@ -181,7 +184,7 @@ namespace StructForge.Collections
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
+        public ReadOnlySpan<T> AsReadOnlySpan() => new(_buffer);
 
         /// <summary>
         /// Returns an unsafe reference to the element at the specified 2D coordinate without bounds checking.
@@ -191,6 +194,15 @@ namespace StructForge.Collections
         /// <returns>A reference to the element at the specified coordinate.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref T GetUnsafeRef(int x, int y) => ref _buffer[y * _width + x];
+        
+        
+        /// <summary>
+        /// Returns an unsafe reference to the element at the specified 2D coordinate without bounds checking.
+        /// </summary>
+        /// <param name="index">Array index.</param>
+        /// <returns>A reference to the element at the specified coordinate.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public ref T GetUnsafeRef(int index) => ref _buffer[index];
         
         /// <summary>
         /// Sets the element at the specified 2D coordinate without bounds checking.
@@ -318,6 +330,11 @@ namespace StructForge.Collections
             return arr;
         }
         
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _buffer.Length);
         /// <inheritdoc/>
@@ -326,5 +343,32 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
+        private string DebuggerDisplay => $"SfGrid2D<{typeof(T).Name}> (Width = {Width}, Height = {Height}, Count = {Count})";
+    }
+
+    internal class SfGrid2DDebugView<T>
+    {
+        private readonly SfGrid2D<T> _grid;
+        public SfGrid2DDebugView(SfGrid2D<T> grid) => _grid = grid;
+        
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[][] Items
+        {
+            get
+            {
+                int width = _grid.Width;
+                int height = _grid.Height;
+                T[][] arr = new T[width][];
+                for (int x = 0; x < width; x++)
+                {
+                    arr[x] = new T[height];
+                    for (int y = 0; y < height; y++)
+                    {
+                        arr[x][y] = _grid[x, y];
+                    }
+                }
+                return arr;
+            }
+        }
     }
 }

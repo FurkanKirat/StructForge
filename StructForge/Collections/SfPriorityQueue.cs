@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -12,6 +13,8 @@ namespace StructForge.Collections
     /// A high-performance Priority Queue backed by a Binary Heap.
     /// Items are dequeued based on their priority.
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfPriorityQueueDebugView<,>))]
     public sealed class SfPriorityQueue<TItem, TPriority> : ISfDataStructure<TItem>
     {
         private readonly SfBinaryHeap<(TItem item, TPriority priority)> _heap;
@@ -55,6 +58,12 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TItem Peek() => _heap.Peek().item;
         
+        /// <summary>
+        /// Dequeues the item with the highest priority if queue is not empty, otherwise does nothing
+        /// </summary>
+        /// <param name="item">Dequeued item</param>
+        /// <param name="priority">Priority of dequeued item</param>
+        /// <returns>true if dequeuing is success otherwise false</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryDequeue(out TItem item, out TPriority priority)
         {
@@ -70,7 +79,8 @@ namespace StructForge.Collections
             return false;
         }
 
-        
+
+        /// <inheritdoc />
         public struct SfPqEnumerator : IEnumerator<TItem>
         {
             private SfArrayEnumerator<(TItem item, TPriority priority)> _heapEnumerator;
@@ -81,9 +91,11 @@ namespace StructForge.Collections
                 _heapEnumerator = heap.GetEnumerator();
             }
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext() => _heapEnumerator.MoveNext();
 
+            /// <inheritdoc />
             public TItem Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -91,10 +103,19 @@ namespace StructForge.Collections
             }
 
             object IEnumerator.Current => Current;
+
+            /// <inheritdoc />
             public void Reset() => _heapEnumerator.Reset();
+
+            /// <inheritdoc />
             public void Dispose() => _heapEnumerator.Dispose();
         }
         
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfPqEnumerator GetEnumerator() => new(_heap);
 
@@ -177,5 +198,19 @@ namespace StructForge.Collections
             return arr;
         }
 
+        private string DebuggerDisplay => $"SfPriorityQueue<{typeof(TItem).Name}, {typeof(TPriority).Name}> (Count = {Count})";
+    }
+    
+    internal sealed class SfPriorityQueueDebugView<TItem, TPriority>
+    {
+        private readonly SfPriorityQueue<TItem, TPriority> _queue;
+
+        public SfPriorityQueueDebugView(SfPriorityQueue<TItem, TPriority> queue)
+        {
+            _queue = queue;
+        }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public (TItem Item, TPriority Priority)[] Items => _queue.AsSpan().ToArray();
     }
 }

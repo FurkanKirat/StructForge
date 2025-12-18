@@ -158,50 +158,40 @@ namespace StructForge.Tests.Collections
     
     public class SfEnumSetConstructorTests
     {
-        // Test için örnek Enum
         private enum TestFlags
         {
             None = 0,
             Alpha = 1,
             Beta = 2,
-            Gamma = 50, // Uzak bir index
-            Delta = 63, // 1. ulong'un sonu
-            Omega = 100 // 2. ulong'a taşan değer
+            Gamma = 50,
+            Delta = 63,
+            Omega = 100
         }
 
         [Fact]
         public void Constructor_FromUlongArray_RestoresStateCorrectly()
         {
-            // 1. Arrange: Orijinal bir set oluştur ve doldur
             var originalSet = new SfEnumSet<TestFlags>();
             originalSet.Add(TestFlags.Alpha);
-            originalSet.Add(TestFlags.Omega); // 100. bit
+            originalSet.Add(TestFlags.Omega);
             
-            // Veriyi dışarı al (Simülasyon: Serialization)
-            // AsSpan().ToArray() ile raw ulong dizisini alıyoruz
             ulong[] rawBits = originalSet.AsSpan().ToArray();
 
-            // 2. Act: Raw array'den yeni set oluştur
             var restoredSet = new SfEnumSet<TestFlags>(rawBits);
 
-            // 3. Assert: Her şey aynı mı?
-            Assert.Equal(originalSet.Count, restoredSet.Count); // Count doğru hesaplandı mı?
+            Assert.Equal(originalSet.Count, restoredSet.Count);
             Assert.True(restoredSet.Contains(TestFlags.Alpha));
             Assert.True(restoredSet.Contains(TestFlags.Omega));
-            Assert.False(restoredSet.Contains(TestFlags.Beta)); // Olmayan gelmemeli
+            Assert.False(restoredSet.Contains(TestFlags.Beta));
         }
 
         [Fact]
         public void Constructor_FromUlongArray_CalculatesCountTrue()
         {
-            // Manuel bir ulong dizisi hazırlayalım
-            // 1. ulong: 5 (binary: ...101) -> 0. ve 2. bitler set
-            // 2. ulong: 1 (binary: ...001) -> 64. bit set
             ulong[] manualBits = new ulong[] { 5, 1 }; 
 
             var set = new SfEnumSet<TestFlags>(manualBits);
-
-            // Toplam 3 bit set edilmiş olmalı
+            
             Assert.Equal(3, set.Count);
         }
 

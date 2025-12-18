@@ -5,7 +5,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
-using StructForge.Extensions;
 using StructForge.Helpers;
 
 namespace StructForge.Collections
@@ -14,8 +13,8 @@ namespace StructForge.Collections
     /// Represents a sorted set data structure backed by an AVL tree.
     /// Maintains unique elements in a sorted order defined by a comparer.
     /// </summary>
-    [DebuggerDisplay("Count = {Count}")]
-    [DebuggerTypeProxy(typeof(SfTreeDebugView<>))]
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfSortedSetDebugView<>))]
     public sealed class SfSortedSet<T> : ISfSet<T>, ICollection<T>
     {
         /// <summary>
@@ -86,6 +85,11 @@ namespace StructForge.Collections
             _tree = new SfAvlTree<T>(collection, _comparer);
         }
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfAvlTree<T>.SfAvlTreeInOrderEnumerator GetEnumerator() => new(_tree);
         /// <inheritdoc/>
@@ -259,5 +263,16 @@ namespace StructForge.Collections
             }
             return true;
         }
+        
+        private string DebuggerDisplay => $"SfSortedSet<{typeof(T).Name}> (Count = {Count})";
+    }
+
+    internal class SfSortedSetDebugView<T>
+    {
+        private readonly SfSortedSet<T> _sfStack;
+        public SfSortedSetDebugView(SfSortedSet<T> sfStack) => _sfStack = sfStack;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _sfStack.ToArray();
     }
 }

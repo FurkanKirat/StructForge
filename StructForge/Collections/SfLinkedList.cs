@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Helpers;
@@ -12,6 +13,8 @@ namespace StructForge.Collections
     /// Supports adding/removing elements at both ends, insertion, deletion, and enumeration.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the list.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfLinkedListDebugView<>))]
     public sealed class SfLinkedList<T> : ISfDataStructure<T>
     {
         private int _count;
@@ -82,6 +85,11 @@ namespace StructForge.Collections
             _tail = current;
         }
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfLinkListEnumerator GetEnumerator() => new(this);
         /// <inheritdoc/>
@@ -95,7 +103,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current is not null)
             {
-                action(current.Value);
+                action(current.ValueRef);
                 current = current.Next;
             }
         }
@@ -106,7 +114,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _tail;
             while (current is not null)
             {
-                action(current.Value);
+                action(current.ValueRef);
                 current = current.Prev;
             }
         }
@@ -120,7 +128,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current is not null)
             {
-                if (comparer.Equals(current.Value, item))
+                if (comparer.Equals(current.ValueRef, item))
                     return true;
                 current = current.Next;
             }
@@ -155,7 +163,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current is not null)
             {
-                array[arrayIndex++] = current.Value;
+                array[arrayIndex++] = current.ValueRef;
                 current = current.Next;
             }
         }
@@ -217,7 +225,7 @@ namespace StructForge.Collections
             if (IsEmpty) 
                 SfThrowHelper.ThrowInvalidOperation("Collection is empty");
 
-            T value = _head.Value;
+            T value = _head.ValueRef;
             RemoveNode(_head);
             return value;
         }
@@ -231,7 +239,7 @@ namespace StructForge.Collections
             if (IsEmpty) 
                 SfThrowHelper.ThrowInvalidOperation("Collection is empty");
 
-            T value = _tail.Value;
+            T value = _tail.ValueRef;
             RemoveNode(_tail);
             return value;
         }
@@ -312,7 +320,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current is not null)
             {
-                if (comparer.Equals(current.Value, item))
+                if (comparer.Equals(current.ValueRef, item))
                 {
                     RemoveNode(current);
                     return true;
@@ -351,7 +359,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _head;
             while (current is not null)
             {
-                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
+                if (SfEqualityComparers<T>.Default.Equals(current.ValueRef, item))
                     return current;
                 current = current.Next;
             }
@@ -368,7 +376,7 @@ namespace StructForge.Collections
             SfLinkedListNode<T> current = _tail;
             while (current is not null)
             {
-                if (SfEqualityComparers<T>.Default.Equals(current.Value, item))
+                if (SfEqualityComparers<T>.Default.Equals(current.ValueRef, item))
                     return current;
                 current = current.Prev;
             }
@@ -386,17 +394,21 @@ namespace StructForge.Collections
             node.Clear();
             _count--;
         }
-        
+
+        /// <inheritdoc />
         public struct SfLinkListEnumerator : IEnumerator<T>
         {
             private SfLinkedListNode<T> _current;
             private readonly SfLinkedListNode<T> _head;
             private bool _started;
 
+            /// <summary>
+            /// Gives the current element's reference
+            /// </summary>
             public ref T Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
-                get => ref _current.Value;
+                get => ref _current.ValueRef;
             }
             
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -406,7 +418,8 @@ namespace StructForge.Collections
                 _head = list.First;
                 _started = false;
             }
-            
+
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -422,6 +435,7 @@ namespace StructForge.Collections
                 return _current is not null;
             }
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset()
             {
@@ -429,13 +443,15 @@ namespace StructForge.Collections
                 _started = false;
             }
 
-            T IEnumerator<T>.Current => _current.Value;
+            T IEnumerator<T>.Current => _current.ValueRef;
 
-            object IEnumerator.Current => _current.Value;
+            object IEnumerator.Current => _current.ValueRef;
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() {}
         }
+        private string DebuggerDisplay => $"SfLinkedList<{typeof(T).Name}> (Count = {Count})";
     }
 
     /// <summary>Represents a node in a doubly linked list.</summary>
@@ -472,5 +488,13 @@ namespace StructForge.Collections
     }
     
     
+    internal class SfLinkedListDebugView<T>
+    {
+        private readonly SfLinkedList<T> _linkedList;
+        public SfLinkedListDebugView(SfLinkedList<T> linkedList) => _linkedList = linkedList;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _linkedList.ToArray();
+    }
     
 }

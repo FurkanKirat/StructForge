@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Helpers;
@@ -11,6 +12,8 @@ namespace StructForge.Collections
     /// A compact boolean array implemented using packed 64-bit blocks.
     /// Efficient for memory usage and bitwise operations.
     /// </summary>
+    [DebuggerDisplay("SfBitArray(Count = {Count})")]
+    [DebuggerTypeProxy(typeof(SfBitArrayDebugView))]
     public sealed class SfBitArray : ISfDataStructure<bool>
     {
         /// <summary>
@@ -138,6 +141,11 @@ namespace StructForge.Collections
         /// <param name="index">The zero-based index of the bit to toggle.</param>
         public void Toggle(int index) => this[index] = !this[index];
         
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfBitArrayEnumerator GetEnumerator() => new(this);
 
@@ -505,5 +513,18 @@ namespace StructForge.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
         }
+        
+        /// <summary>
+        /// Provides a custom debugger view for <see cref="SfBitArray"/> displaying elements.
+        /// </summary>
+        private sealed class SfBitArrayDebugView
+        {
+            private readonly SfBitArray _bitArray;
+            public SfBitArrayDebugView(SfBitArray bitArray) { _bitArray = bitArray; }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public bool[] Items => _bitArray.ToArray();
+        }
+        
     }
 }

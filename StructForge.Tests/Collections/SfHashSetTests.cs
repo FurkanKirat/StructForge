@@ -159,5 +159,111 @@ namespace StructForge.Tests.Collections
             Assert.True(set1.IsSupersetOf(set2));
             Assert.False(set2.IsSupersetOf(set1));
         }
+        
+
+        [Fact]
+        public void Remove_NonExistentItem_ShouldReturnFalse()
+        {
+            var set = new SfHashSet<int> { 1, 2, 3 };
+            Assert.False(set.Remove(99));
+            Assert.Equal(3, set.Count);
+        }
+
+        [Fact]
+        public void Remove_WithCollisions_ShouldMaintainChain()
+        {
+            var comparer = new BadIntComparer(); 
+            var set = new SfHashSet<int>(capacity: 10, comparer: comparer);
+
+            set.Add(1);
+            set.Add(2);
+            set.Add(3);
+            set.Add(4);
+            set.Add(5);
+
+            bool removed = set.Remove(3);
+
+            Assert.True(removed);
+            Assert.Equal(4, set.Count);
+            Assert.False(set.Contains(3));
+            
+            Assert.True(set.Contains(1));
+            Assert.True(set.Contains(2));
+            Assert.True(set.Contains(4));
+            Assert.True(set.Contains(5));
+        }
+
+        [Fact]
+        public void Remove_HeadOfChain_ShouldUpdateBucket()
+        {
+            var comparer = new BadIntComparer();
+            var set = new SfHashSet<int>(capacity: 10, comparer: comparer);
+            
+            set.Add(10);
+            set.Add(20);
+            set.Add(30);
+
+            set.Remove(30);
+
+            Assert.False(set.Contains(30));
+            Assert.True(set.Contains(20));
+            Assert.True(set.Contains(10));
+        }
+
+        [Fact]
+        public void Remove_TailOfChain_ShouldUpdatePreviousNode()
+        {
+            var comparer = new BadIntComparer();
+            var set = new SfHashSet<int>(capacity: 10, comparer: comparer);
+
+            set.Add(10);
+            set.Add(20);
+            set.Add(30);
+
+            set.Remove(10);
+
+            Assert.False(set.Contains(10));
+            Assert.True(set.Contains(20));
+            Assert.True(set.Contains(30));
+        }
+
+        [Fact]
+        public void Remove_RandomOperations_StressTest()
+        {
+            var set = new SfHashSet<int>();
+            var tracker = new HashSet<int>();
+            var random = new Random(42);
+
+            for (int i = 0; i < 50; i++)
+            {
+                int val = random.Next(0, 500);
+                bool add = random.NextDouble() > 0.5;
+
+                if (add)
+                {
+                    bool added1 = set.TryAdd(val);
+                    bool added2 = tracker.Add(val);
+                    Assert.Equal(added2, added1);
+                }
+                else
+                {
+                    bool rem1 = set.Remove(val);
+                    bool rem2 = tracker.Remove(val);
+                    Assert.Equal(rem2, rem1);
+                }
+            }
+
+            Assert.Equal(tracker.Count, set.Count);
+            foreach (var item in tracker)
+            {
+                Assert.True(set.Contains(item));
+            }
+        }
+
+        private class BadIntComparer : IEqualityComparer<int>
+        {
+            public bool Equals(int x, int y) => x == y;
+            public int GetHashCode(int obj) => 1;
+        }
     }
 }

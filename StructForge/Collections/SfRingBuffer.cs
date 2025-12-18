@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -13,6 +14,8 @@ namespace StructForge.Collections
     /// Supports overwrite when full or TryEnqueue for overflow-safe insertion.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the queue.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfRingBufferDebugView<>))]
     public sealed class SfRingBuffer<T> : ISfQueue<T>
     {
         private readonly T[] _buffer; // The underlying fixed-size array storing elements
@@ -34,6 +37,9 @@ namespace StructForge.Collections
             get => _count == 0;
         }
 
+        /// <summary>
+        /// Checks if the Ring Buffer is full or not.
+        /// </summary>
         public bool IsFull
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -60,6 +66,11 @@ namespace StructForge.Collections
 
         #region Enumeration
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfCircularQueueEnumerator<T> GetEnumerator() => new(_buffer, _head, _count);
         /// <inheritdoc/>
@@ -294,5 +305,16 @@ namespace StructForge.Collections
         }
 
         #endregion
+        
+        private string DebuggerDisplay => $"SfRingBuffer<{typeof(T).Name}> (Capacity = {Capacity}, Count = {Count})";
+    }
+    
+    internal class SfRingBufferDebugView<T>
+    {
+        private readonly SfRingBuffer<T> _sfRingBuffer;
+        public SfRingBufferDebugView(SfRingBuffer<T> sfRingBuffer) => _sfRingBuffer = sfRingBuffer;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _sfRingBuffer.ToArray();
     }
 }

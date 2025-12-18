@@ -76,13 +76,11 @@ public class SfEnumSetBenchmarks
         setA.UnionWith(setB);
     }
     
-    // --- TEST 4: REMOVE (Silme) ---
+    // --- TEST 4: REMOVE---
     [Benchmark]
     public void System_Remove()
     {
-        // Önce doldur
         var set = new HashSet<SfTestEnum>(_values);
-        // Sonra boşalt
         foreach (var val in _values)
             set.Remove(val);
     }
@@ -95,13 +93,12 @@ public class SfEnumSetBenchmarks
             set.Remove(val);
     }
 
-    // --- TEST 5: INTERSECT (Kesişim - AND) ---
-    // Bitwise AND işlemi. SfEnumSet burada uçmalı.
+    // --- TEST 5: INTERSECT ---
     [Benchmark]
     public void System_Intersect()
     {
         var setA = new HashSet<SfTestEnum>(_values);
-        var setB = new HashSet<SfTestEnum>(_values); // Tam örtüşen set
+        var setB = new HashSet<SfTestEnum>(_values);
         setA.IntersectWith(setB);
     }
 
@@ -113,13 +110,13 @@ public class SfEnumSetBenchmarks
         setA.IntersectWith(setB);
     }
 
-    // --- TEST 6: EXCEPT (Fark - AND NOT) ---
+    // --- TEST 6: EXCEPT ---
     [Benchmark]
     public void System_Except()
     {
         var setA = new HashSet<SfTestEnum>(_values);
         var setB = new HashSet<SfTestEnum>(_values);
-        setA.ExceptWith(setB); // Sonuç boş küme olmalı
+        setA.ExceptWith(setB);
     }
 
     [Benchmark]
@@ -147,8 +144,7 @@ public class SfEnumSetBenchmarks
         setA.SymmetricExceptWith(setB); // Bitwise XOR
     }
 
-    // --- TEST 8: SUBSET / SUPERSET (Alt Küme Kontrolü) ---
-    // Oyunlarda "Gereksinimler karşılanıyor mu?" kontrolü için kritiktir.
+    // --- TEST 8: SUBSET / SUPERSET ---
     [Benchmark]
     public bool System_IsSubset()
     {
@@ -165,8 +161,7 @@ public class SfEnumSetBenchmarks
         return setA.IsSubsetOf(setB);
     }
 
-    // --- TEST 9: OVERLAPS (Çakışma Kontrolü) ---
-    // "Hiç ortak özelliğimiz var mı?" sorusu.
+    // --- TEST 9: OVERLAPS ---
     [Benchmark]
     public bool System_Overlaps()
     {

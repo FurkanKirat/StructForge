@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -12,6 +13,8 @@ namespace StructForge.Collections
     /// Represents a last-in-first-out (LIFO) stack of objects.
     /// </summary>
     /// <typeparam name="T">The type of elements in the stack.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfStackDebugView<>))]
     public sealed class SfStack<T> : ISfDataStructure<T>
     {
         private readonly SfList<T> _buffer;
@@ -91,6 +94,11 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ForEach(Action<T> action) => _buffer.ForEach(action);
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfReverseArrayEnumerator<T> GetEnumerator() => _buffer.GetReverseEnumerator();
         
@@ -231,5 +239,16 @@ namespace StructForge.Collections
         }
 
         #endregion
+        
+        private string DebuggerDisplay => $"SfStack<{typeof(T).Name}> (Count = {Count})";
+    }
+
+    internal class SfStackDebugView<T>
+    {
+        private readonly SfStack<T> _sfStack;
+        public SfStackDebugView(SfStack<T> sfStack) => _sfStack = sfStack;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _sfStack.ToArray();
     }
 }

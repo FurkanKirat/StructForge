@@ -5,6 +5,7 @@ namespace StructForge.Benchmarks.Collections;
 
 [MemoryDiagnoser]
 [RankColumn]
+[MemoryRandomization]
 public class SfHashSetBenchmarks
 {
     [Params(10_000, 100_000)] 
@@ -15,12 +16,11 @@ public class SfHashSetBenchmarks
     
     private int[] _data;
     private int[] _missData;
+    private Random _random;
 
-    [GlobalSetup]
-    public void Setup()
+    [IterationSetup]
+    public void IterationSetup()
     {
-        var rnd = new Random(42);
-        
         _data = new int[Size];
         _missData = new int[Size];
         
@@ -29,13 +29,13 @@ public class SfHashSetBenchmarks
 
         for (int i = 0; i < Size; i++)
         {
-            _data[i] = rnd.Next(); 
+            _data[i] = _random.Next(); 
         }
 
         for (int i = 0; i < Size; i++)
         {
-            int val = rnd.Next();
-            while (_data.Contains(val)) val = rnd.Next();
+            int val = _random.Next();
+            while (_data.Contains(val)) val = _random.Next();
             _missData[i] = val;
         }
 
@@ -44,6 +44,11 @@ public class SfHashSetBenchmarks
             _sysSet.Add(item);
             _sfSet.TryAdd(item);
         }
+    }
+    [GlobalSetup]
+    public void Setup()
+    {
+        _random = new Random(42);
     }
     
     

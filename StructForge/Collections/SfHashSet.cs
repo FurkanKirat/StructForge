@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
@@ -8,17 +9,25 @@ using StructForge.Helpers;
 
 namespace StructForge.Collections
 {
+    /// <summary>
+    /// Represents a hash-based set of unique elements of type <typeparamref name="T"/>.
+    /// Provides fast insertion, removal, and lookup operations while ensuring all elements are unique.
+    /// </summary>
+    /// <typeparam name="T">The type of elements stored in the set.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfHashSetDebugView<>))]
     public sealed class SfHashSet<T> : ISfSet<T>, ICollection<T>
     {
         internal struct SfHashSetNode
         {
             public T Value;
             public int Next;
-
-            public SfHashSetNode(T value, int next)
+            internal readonly int Hash;
+            public SfHashSetNode(T value, int next,  int hash)
             {
                 Value = value;
                 Next = next;
+                Hash = hash;
             }
         }
 
@@ -57,11 +66,11 @@ namespace StructForge.Collections
         public SfHashSet(int capacity = 16, IEqualityComparer<T> comparer = null)
         {
             _comparer = comparer ?? SfEqualityComparers<T>.Default;
-            int size = SfPrimeHelper.GetNextPrime(capacity);
+            int targetSize = (int)(capacity / LoadFactor);
+            int size = SfPrimeHelper.GetNextPrime(targetSize);
             _buckets = new int[size];
-            _nodes = new SfHashSetNode[capacity];
-            for (int i = 0; i < _buckets.Length; i++)
-                _buckets[i] = -1;
+            _nodes = new SfHashSetNode[size];
+            Array.Fill(_buckets, -1);
         }
 
         /// <summary>
@@ -78,14 +87,14 @@ namespace StructForge.Collections
             int size = Math.Max(4, (int)(arr.Length / LoadFactor));
             _buckets = new int[size];
             _nodes = new SfHashSetNode[size];
-            for (int i = 0; i < _buckets.Length; i++)
-                _buckets[i] = -1;
+            Array.Fill(_buckets, -1);
             
             for (int i = 0; i < arr.Length; i++)
                 TryAdd(arr[i]);
         }
 
-        
+
+        /// <inheritdoc />
         public struct SfHashSetEnumerator : IEnumerator<T>
         {
             private readonly SfHashSetNode[] _nodes;
@@ -100,6 +109,7 @@ namespace StructForge.Collections
                 _index = -1;
             }
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -112,6 +122,9 @@ namespace StructForge.Collections
                 return false;
             }
             
+            /// <summary>
+            /// Gives the current element's reference
+            /// </summary>
             public ref T Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -120,13 +133,21 @@ namespace StructForge.Collections
 
             T IEnumerator<T>.Current => _nodes[_index].Value;
             object IEnumerator.Current => _nodes[_index].Value;
-
+            
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset() => _index = -1;
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
         }
+        
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfHashSetEnumerator GetEnumerator() => new(_nodes, _count);
 
@@ -146,10 +167,12 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Contains(T item)
         {
-            int bucketIndex = GetBucketIndex(item);
+            int hash = _comparer.GetHashCode(item) & 0x7fffffff;
+            int bucketIndex = hash % _buckets.Length;
             for (int i = _buckets[bucketIndex]; i >= 0; i = _nodes[i].Next)
             {
-                if (_comparer.Equals(item, _nodes[i].Value))
+                ref var node = ref _nodes[i];
+                if (node.Hash == hash && _comparer.Equals(item, node.Value))
                     return true;
             }
             return false;
@@ -183,27 +206,29 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Remove(T item)
         {
-            int index = GetBucketIndex(item);
+            int hashCode = _comparer.GetHashCode(item) & 0x7fffffff;
+            int bucketIndex = hashCode % _buckets.Length;
             int prev = -1;
 
-            for (int i = _buckets[index]; i >= 0; i = _nodes[i].Next)
+            for (int i = _buckets[bucketIndex]; i >= 0; i = _nodes[i].Next)
             {
-                if (_comparer.Equals(item, _nodes[i].Value))
+                ref var node = ref _nodes[i];
+                if (hashCode == node.Hash && _comparer.Equals(item, node.Value))
                 {
                     if (prev < 0)
                     {
-                        _buckets[index] = _nodes[i].Next;
+                        _buckets[bucketIndex] = node.Next;
                     }
                     else
                     {
-                        _nodes[prev].Next = _nodes[i].Next;
+                        _nodes[prev].Next = node.Next;
                     }
                     
                     if (i != _count - 1)
                     {
-                        _nodes[i] = _nodes[_count - 1];
-
-                        int movedBucketIndex = GetBucketIndex(_nodes[i].Value);
+                        node = _nodes[_count - 1];
+                        int movedBucketIndex = node.Hash % _buckets.Length;
+                        
                         int j = _buckets[movedBucketIndex];
                         int prevJ = -1;
                         while (j != _count - 1)
@@ -230,10 +255,7 @@ namespace StructForge.Collections
         /// <inheritdoc cref="ICollection{T}.Clear" />
         public void Clear()
         {
-            for (int i = 0; i < _buckets.Length; i++)
-            {
-                _buckets[i] = -1;
-            }
+            Array.Fill(_buckets, -1);
             Array.Clear(_nodes, 0, _count);
             _count = 0;
         }
@@ -268,16 +290,18 @@ namespace StructForge.Collections
                 Resize();
             }
             
-            int bucketIndex = GetBucketIndex(item);
+            int hashCode = _comparer.GetHashCode(item) & 0x7fffffff;
+            int bucketIndex = hashCode % _buckets.Length;
             int prev = -1;
             for (int i = _buckets[bucketIndex]; i >= 0; i = _nodes[i].Next)
             {
-                if (_comparer.Equals(item, _nodes[i].Value))
+                ref var node = ref _nodes[i];
+                if (hashCode == node.Hash && _comparer.Equals(item, node.Value))
                     return false;
                 prev = i;
             }
             
-            _nodes[_count] = new SfHashSetNode(item, -1);
+            _nodes[_count] = new SfHashSetNode(item, -1, hashCode);
             if (prev < 0)
                 _buckets[bucketIndex] = _count;
             else
@@ -393,13 +417,14 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool TryGetValue(T equalValue, out T actualValue)
         {
-            int index = GetBucketIndex(equalValue);
+            int hashCode = _comparer.GetHashCode(equalValue) & 0x7fffffff;
+            int index = hashCode % _buckets.Length;
             for (int i = _buckets[index]; i >= 0; i = _nodes[i].Next)
             {
-                T current = _nodes[i].Value;
-                if (_comparer.Equals(current, equalValue))
+                ref var node = ref _nodes[i];
+                if (hashCode == node.Hash && _comparer.Equals(node.Value, equalValue))
                 {
-                    actualValue = current;
+                    actualValue = node.Value;
                     return true;
                 }
             }
@@ -408,33 +433,37 @@ namespace StructForge.Collections
             actualValue = default;
             return false;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int GetBucketIndex(T item)
-            => (_comparer.GetHashCode(item) & 0x7fffffff) % _buckets.Length;
-
+        
         private void Resize()
         {
             int newSize = SfPrimeHelper.GetNextPrime(_buckets.Length * 2);
             
             int[] newBuckets = new int[newSize];
-            for (int i = 0; i < newSize; i++)
-                newBuckets[i] = -1;
-
+            Array.Fill(newBuckets, -1);
+            
             SfHashSetNode[] newNodes = new SfHashSetNode[newSize];
-            Array.Copy(_nodes, 0, newNodes, 0, _nodes.Length);
+            Array.Copy(_nodes, 0, newNodes, 0, _count);
 
             for (int i = 0; i < _count; i++)
             {
-                int hash = (_comparer.GetHashCode(newNodes[i].Value) & 0x7fffffff) % newSize;
-                newNodes[i].Next = newBuckets[hash];
-                newBuckets[hash] = i;
+                int bucketIndex = newNodes[i].Hash % newSize;
+                newNodes[i].Next = newBuckets[bucketIndex];
+                newBuckets[bucketIndex] = i;
             }
             
             _nodes = newNodes;
             _buckets = newBuckets;
         }
         
-        
+        private string DebuggerDisplay => $"SfHashSet<{typeof(T).Name}> (Count = {Count})";
+    }
+    
+    internal class SfHashSetDebugView<T>
+    {
+        private readonly SfHashSet<T> _hashSet;
+        public SfHashSetDebugView(SfHashSet<T> hashSet) => _hashSet = hashSet;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _hashSet.ToArray();
     }
 }

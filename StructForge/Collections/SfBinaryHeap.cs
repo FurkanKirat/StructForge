@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -15,6 +16,8 @@ namespace StructForge.Collections
     /// unless a custom comparer is provided.
     /// </para>
     /// </summary>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfBinaryHeapDebugView<>))]
     public sealed class SfBinaryHeap<T> : ISfDataStructure<T>
     {
         private const int DefaultCapacity = 16;
@@ -36,6 +39,9 @@ namespace StructForge.Collections
             get => _count == 0;
         }
 
+        /// <summary>
+        /// Returns the current capacity of the heap
+        /// </summary>
         public int Capacity
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -224,15 +230,20 @@ namespace StructForge.Collections
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan() => _buffer.AsSpan();
+        public Span<T> AsSpan() => new(_buffer, 0, _count);
         
         /// <summary>
         /// Returns the underlying data array as readonly span.
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
+        public ReadOnlySpan<T> AsReadOnlySpan() => new(_buffer, 0, _count);
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _count);
 
@@ -259,6 +270,20 @@ namespace StructForge.Collections
             }
             return false;
         }
+        
+        private string DebuggerDisplay => $"SfBinaryHeap<{typeof(T).Name}> (Count = {Count})";
+    }
+    
+    /// <summary>
+    /// Provides a custom debugger view for <see cref="SfBinaryHeap{T}"/> displaying elements as same as in heap.
+    /// </summary>
+    internal sealed class SfBinaryHeapDebugView<T>
+    {
+        private readonly SfBinaryHeap<T> _heap;
+        public SfBinaryHeapDebugView(SfBinaryHeap<T> heap) { _heap = heap; }
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _heap.ToArray();
     }
 
 }

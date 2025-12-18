@@ -4,21 +4,38 @@ using System.Runtime.CompilerServices;
 
 namespace StructForge.Comparers
 {
+    /// <summary>
+    /// Provides commonly used <see cref="IEqualityComparer{T}"/> instances for numeric types.
+    /// Supports epsilon-based comparison for floating point numbers and sign-based comparison for integers.
+    /// </summary>
     public static class SfNumberEqualityComparers
     {
         // --- BACKING FIELDS ---
         private static readonly IEqualityComparer<int> _sign = new SfIntSignEqualityComparer();
         
+        // --- PROPERTIES (Backing Field + Inline) ---
+        
+        /// <summary>
+        /// Returns an <see cref="IEqualityComparer{Double}"/> that compares doubles using a specified epsilon tolerance.
+        /// </summary>
+        /// <param name="epsilon">The maximum difference allowed for two doubles to be considered equal. Default is 1e-6.</param>
+        /// <returns>A comparer that considers doubles equal if their difference is less than or equal to <paramref name="epsilon"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEqualityComparer<double> Epsilon(double epsilon = 1e-6) 
             => new SfDoubleEpsilonComparer(epsilon);
 
+        /// <summary>
+        /// Returns an <see cref="IEqualityComparer{Single}"/> that compares floats using a specified epsilon tolerance.
+        /// </summary>
+        /// <param name="epsilon">The maximum difference allowed for two floats to be considered equal. Default is 1e-5f.</param>
+        /// <returns>A comparer that considers floats equal if their difference is less than or equal to <paramref name="epsilon"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEqualityComparer<float> EpsilonFloat(float epsilon = 1e-5f) 
             => new SfFloatEpsilonComparer(epsilon);
-
-        // --- PROPERTIES (Backing Field + Inline) ---
-
+        
+        /// <summary>
+        /// Gets an <see cref="IEqualityComparer{Int32}"/> that considers integers equal if they have the same sign.
+        /// </summary>
         public static IEqualityComparer<int> Sign
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

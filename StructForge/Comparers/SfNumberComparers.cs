@@ -17,12 +17,18 @@ namespace StructForge.Comparers
         private static readonly IComparer<int> _intAbsolute = new SfIntAbsComparer();
         private static readonly IComparer<int> _intSign = new SfIntSignComparer();
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Int32}"/> that compares integers according to their absolute value.
+        /// </summary>
         public static IComparer<int> IntAbsolute
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _intAbsolute;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Int32}"/> that considers integers equal if they have the same sign.
+        /// </summary>
         public static IComparer<int> IntSign
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -48,12 +54,18 @@ namespace StructForge.Comparers
         private static readonly IComparer<double> _doubleAbsolute = new SfDoubleAbsComparer();
         private static readonly IComparer<double> _doubleSign = new SfDoubleSignComparer();
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Double}"/> that compares double values according to their absolute value.
+        /// </summary>
         public static IComparer<double> DoubleAbsolute
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _doubleAbsolute;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Double}"/> that considers double values equal if they have the same sign.
+        /// </summary>
         public static IComparer<double> DoubleSign
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -79,12 +91,18 @@ namespace StructForge.Comparers
         private static readonly IComparer<float> _floatAbsolute = new SfFloatAbsComparer();
         private static readonly IComparer<float> _floatSign = new SfFloatSignComparer();
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Single}"/> that compares float values according to their absolute value.
+        /// </summary>
         public static IComparer<float> FloatAbsolute
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _floatAbsolute;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Float}"/> that considers float values equal if they have the same sign.
+        /// </summary>
         public static IComparer<float> FloatSign
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,12 +128,18 @@ namespace StructForge.Comparers
         private static readonly IComparer<long> _longAbsolute = new SfLongAbsComparer();
         private static readonly IComparer<long> _longSign = new SfLongSignComparer();
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Long}"/> that compares long values according to their absolute value.
+        /// </summary>
         public static IComparer<long> LongAbsolute
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _longAbsolute;
         }
 
+        /// <summary>
+        /// Gets an <see cref="IComparer{Int32}"/> that considers long values equal if they have the same sign.
+        /// </summary>
         public static IComparer<long> LongSign
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

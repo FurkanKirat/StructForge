@@ -4,10 +4,18 @@ using StructForge.Collections;
 
 namespace StructForge.Extensions
 {
+    /// <summary>
+    /// A class for shuffle operations
+    /// </summary>
     public static class SfShuffleExtensions
     {
         private static readonly Random Random = new Random();
         
+        /// <summary>
+        /// Shuffles the given SfList
+        /// </summary>
+        /// <param name="list">Given List</param>
+        /// <typeparam name="T">T</typeparam>
         public static void Shuffle<T>(this SfList<T> list)
         {
             Span<T> span = list.AsSpan();
@@ -20,6 +28,12 @@ namespace StructForge.Extensions
             }
         }
 
+        /// <summary>
+        /// Shuffles the given enumerable and returns the shuffled enumerable
+        /// </summary>
+        /// <param name="source">Given enumerable</param>
+        /// <typeparam name="T">T</typeparam>
+        /// <returns>Shuffled enumerable</returns>
         public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> source)
         {
             SfList<T> list = new SfList<T>(source);

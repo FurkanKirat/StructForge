@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Helpers;
 
@@ -10,6 +11,8 @@ namespace StructForge.Collections
     /// Represents a three-dimensional bit array backed by a linear <see cref="SfBitArray"/>.
     /// Provides fast indexed access and efficient bitwise operations in 3D form.
     /// </summary>
+    [DebuggerDisplay("SfBitArray3D(Width = {Width}, Height = {Height}, Depth = {Depth}, Count = {Count})")]
+    [DebuggerTypeProxy(typeof(SfBitArray3DDebugView))]
     public sealed class SfBitArray3D : ISfDataStructure<bool>
     {
         private readonly int _width, _height, _depth, _widthTimesHeight;
@@ -230,6 +233,11 @@ namespace StructForge.Collections
             set => _buffer[IndexSafe(x, y, z)] = value;
         }
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfBitArray.SfBitArrayEnumerator GetEnumerator() => new(_buffer);
         /// <inheritdoc/>
@@ -379,6 +387,41 @@ namespace StructForge.Collections
                 SfThrowHelper.ThrowArgument("BitArray3D sizes must match.");
 
             _buffer.Xor(other._buffer);
+        }
+        
+        /// <summary>
+        /// Provides a custom debugger view for <see cref="SfBitArray3D"/> displaying elements.
+        /// </summary>
+        internal sealed class SfBitArray3DDebugView
+        {
+            private readonly SfBitArray3D _array;
+            public SfBitArray3DDebugView(SfBitArray3D array) { _array = array; }
+
+            [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+            public bool[][][] Items
+            {
+                get
+                {
+                    int sizeX = _array.Width;
+                    int sizeY = _array.Height;
+                    int sizeZ = _array.Depth;
+
+                    bool[][][] view = new bool[sizeX][][];
+                    for (int x = 0; x < sizeX; x++)
+                    {
+                        view[x] = new bool[sizeY][];
+                        for (int y = 0; y < sizeY; y++)
+                        {
+                            view[x][y] = new bool[sizeZ];
+                            for (int z = 0; z < sizeZ; z++)
+                            {
+                                view[x][y][z] = _array[x, y, z];
+                            }
+                        }
+                    }
+                    return view;
+                }
+            }
         }
     }
 }

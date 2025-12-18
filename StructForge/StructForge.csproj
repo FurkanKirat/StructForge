@@ -16,7 +16,7 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 
 		<PackageId>StructForge</PackageId>
-		<Version>1.4.3</Version>
+		<Version>1.5.0</Version>
 		<Authors>Furkan Kırat</Authors>
 		<Company>KankanGames</Company>
 		
@@ -28,25 +28,17 @@
 		<PackageProjectUrl>https://github.com/FurkanKirat/StructForge</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/FurkanKirat/StructForge</RepositoryUrl>
 		
-		<PackageReleaseNotes>### 🔧 Maintenance Release v1.4.3
+		<PackageReleaseNotes>v1.5.0 Release Notes
 
-This release resolves compilation errors for Unity 2021.3+ users and cleans up the project structure.
+🔥 New: SfDictionary: Added high-performance, allocation-free dictionary implementation.
 
-#### 🐛 Critical Fixes
-* **Fixed C# Version Mismatch:** Enforced `LangVersion 9.0` in the project configuration.
-    * *Fixes:* `error CS8773: Feature 'file-scoped namespace' is not available in C# 9.0`.
-    * All file-scoped namespaces have been converted to block-scoped namespaces to ensure full compatibility with Unity 2021 LTS.
-* **Fixed Duplicate Attributes:** Enabled .NET 8 {UseArtifactsOutput} to redirect build artifacts.
-    * *Fixes:* `error CS0579: Duplicate 'System.Reflection.AssemblyVersionAttribute'`.
-    * Prevents Unity from detecting and conflicting with Visual Studio's `bin` and `obj` folders inside the package directory.
+🕸️ New: SfGraph (Core): Introduced the base Graph data structure architecture (Adjacency List).
 
-> **Note:** The core logic and performance of data structures remain unchanged. This update is purely for build configuration and compatibility.
+Note: Pathfinding algorithms (A*, BFS, DFS) are scheduled for the upcoming v1.6.0 release.
 
-#### 📦 Installation
+🛠️ Debugging: Added comprehensive DebuggerTypeProxies (Visualizers) for all collections. You can now view internal items of SfGraph, SfBitArray, and others directly in Visual Studio debugger.
 
-**For Unity (OpenUPM):**
-```bash
-openupm add com.kankangames.structforge 
+✨ Improvements: General stability improvements and optimizations.
 			```		
 		</PackageReleaseNotes>
 

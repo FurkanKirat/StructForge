@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
@@ -14,6 +15,8 @@ namespace StructForge.Collections
     /// Supports Add, Insert, Remove, RemoveAt, Indexer access, CopyTo, and enumeration.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the list.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfListDebugView<>))]
     public sealed class SfList<T> : IList<T>, ISfDataStructure<T>
     {
         private T[] _buffer;
@@ -64,7 +67,7 @@ namespace StructForge.Collections
         /// </summary>
         public SfList(int capacity = DefaultCapacity, float growthFactor = DefaultGrowthFactor)
         {
-            if (capacity <= 0)
+            if (capacity < 0)
                 SfThrowHelper.ThrowArgumentOutOfRange(nameof(capacity));
             
             _buffer = new T[capacity];
@@ -113,9 +116,19 @@ namespace StructForge.Collections
 
         #region Enumeration
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _count);
         
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection in reverse order.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>A reverse enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfReverseArrayEnumerator<T> GetReverseEnumerator()
         {
@@ -137,14 +150,24 @@ namespace StructForge.Collections
 
         #endregion
         #region Core Methods
-
-        /// <inheritdoc/>
+        
+        /// <summary>
+        /// Adds an item to the end of the list.
+        /// Similar to <see cref="ICollection{T}.Add"/>, but uses <c>in T</c> for performance to avoid unnecessary copies.
+        /// </summary>
+        /// <param name="item">The item to add to the list.</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Add(T item)
+        public void Add(in T item)
         {
             ReGrowthIfNeeded();
             ref var baseRef = ref _buffer[0];
             Unsafe.Add(ref baseRef, _count++) = item; 
+        }
+        
+        /// <inheritdoc />
+        void ICollection<T>.Add(T item)
+        {
+            Add(in item);
         }
         
         /// <summary>
@@ -170,8 +193,7 @@ namespace StructForge.Collections
             }
             
         }
-
-
+        
         /// <inheritdoc cref="ISfDataStructure{T}.Clear" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Clear()
@@ -182,7 +204,10 @@ namespace StructForge.Collections
 
         /// <inheritdoc cref="ISfDataStructure{T}.Contains(T)" />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Contains(T item) => Array.IndexOf(_buffer, item, 0, _count) >= 0;
+        public bool Contains(in T item) => Array.IndexOf(_buffer, item, 0, _count) >= 0;
+        
+        bool ICollection<T>.Contains(T item) => Contains(in item);
+        bool ISfDataStructure<T>.Contains(T item) => Contains(in item);
 
         /// <inheritdoc/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -216,8 +241,13 @@ namespace StructForge.Collections
             return arr;
         }
         
-        /// <inheritdoc/>
-        public bool Remove(T item)
+        /// <summary>
+        /// Removes the first occurrence of a specific item from the list.
+        /// Similar to <see cref="ICollection{T}.Remove"/>, but uses <c>in T</c> for performance.
+        /// </summary>
+        /// <param name="item">The item to remove.</param>
+        /// <returns>True if the item was successfully removed; otherwise, false.</returns>
+        public bool Remove(in T item)
         {
             int index = Array.IndexOf(_buffer, item, 0, _count);
             if (index < 0) 
@@ -231,17 +261,27 @@ namespace StructForge.Collections
             Unsafe.Add(ref baseRef, --_count) = default; // Clear last slot
             return true;
         }
-
-
-        /// <inheritdoc/>
+        bool ICollection<T>.Remove(T item) => Remove(in item);
+        
+        /// <summary>
+        /// Returns the index of the first occurrence of the specified item in the list.
+        /// Similar to <see cref="List{T}.IndexOf(T)"/>, but uses <c>in T</c> for performance to avoid unnecessary copies.
+        /// </summary>
+        /// <param name="item">The item to locate in the list.</param>
+        /// <returns>
+        /// The zero-based index of the first occurrence of the item, or -1 if not found.
+        /// </returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int IndexOf(T item)
-        {
-            return Array.IndexOf(_buffer, item, 0, _count);
-        }
+        public int IndexOf(in T item) => Array.IndexOf(_buffer, item, 0, _count);
+        int IList<T>.IndexOf(T item) => IndexOf(in item);
 
-        /// <inheritdoc/>
-        public void Insert(int index, T item)
+        /// <summary>
+        /// Inserts an item at the specified index in the list.
+        /// This is similar to <see cref="IList{T}.Insert"/>, but uses <c>in T</c> for performance.
+        /// </summary>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="item">The item to insert.</param>
+        public void Insert(int index, in T item)
         {
             if ((uint)index > (uint)_count) 
                 SfThrowHelper.ThrowArgumentOutOfRange(nameof(index));
@@ -258,6 +298,8 @@ namespace StructForge.Collections
             Unsafe.Add(ref baseRef, index) = item;
             _count++;
         }
+        
+        void IList<T>.Insert(int index, T item) => Insert(index, in item);
 
         /// <inheritdoc/>
         public void RemoveAt(int index)
@@ -339,9 +381,10 @@ namespace StructForge.Collections
                 SfThrowHelper.ThrowArgumentOutOfRange(nameof(j));
             
             ref var baseRef = ref _buffer[0];
-            ref var temp = ref Unsafe.Add(ref baseRef, i);
-            Unsafe.Add(ref baseRef, i) = Unsafe.Add(ref baseRef, j);
-            Unsafe.Add(ref baseRef, j) = temp;
+            ref T refI = ref Unsafe.Add(ref baseRef, i);
+            ref T refJ = ref Unsafe.Add(ref baseRef, j);
+            
+            (refI, refJ) = (refJ, refI);
         }
 
         /// <summary>
@@ -400,14 +443,14 @@ namespace StructForge.Collections
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Span<T> AsSpan() => _buffer.AsSpan();
+        public Span<T> AsSpan() => new(_buffer, 0, _count);
         
         /// <summary>
         /// Returns the underlying data array as readonly span.
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
+        public ReadOnlySpan<T> AsReadOnlySpan() => new(_buffer, 0, _count);
 
         /// <summary>
         /// Trims the underlying array if it has excessive capacity,
@@ -478,5 +521,15 @@ namespace StructForge.Collections
             }
             _buffer = newBuffer;
         }
+        
+        private string DebuggerDisplay => $"SfList<{typeof(T).Name}> (Count = {Count})";
+    }
+
+    internal class SfListDebugView<T>
+    {
+        private readonly SfList<T> _list;
+        public SfListDebugView(SfList<T> list) => _list = list;
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _list.ToArray();
     }
 }

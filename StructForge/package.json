@@ -1,6 +1,6 @@
 {
   "name": "com.kankangames.structforge",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "displayName": "StructForge",
   "description": "High-performance, Zero-Allocation, Unsafe data structures for Unity. Includes EnumSet, BitArray3D, Grid and more.",
   "unity": "2021.3",

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
 using StructForge.Enumerators;
@@ -13,6 +14,8 @@ namespace StructForge.Collections
     /// Provides fast indexed access and efficient memory layout for 3D data structures.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the grid.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfGrid3DDebugView<>))]
     public sealed class SfGrid3D<T> : ISfDataStructure<T>
     {
         private readonly int _width, _height, _depth, _widthTimesHeight;
@@ -213,7 +216,7 @@ namespace StructForge.Collections
         /// </summary>
         /// <returns>The internal array containing the grid data.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ReadOnlySpan<T> AsReadOnlySpan() => new ReadOnlySpan<T>(_buffer);
+        public ReadOnlySpan<T> AsReadOnlySpan() => new(_buffer);
 
         /// <summary>
         /// Returns an unsafe reference to the element at the specified 3D coordinate without bounds checking.
@@ -361,6 +364,11 @@ namespace StructForge.Collections
         }
 
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _buffer.Length);
         /// <inheritdoc/>
@@ -369,5 +377,39 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
+        private string DebuggerDisplay => $"SfGrid3D<{typeof(T).Name}> (Width = {Width}, Height = {Height}, Depth = {Depth}, Count = {Count})";
+    }
+
+    internal class SfGrid3DDebugView<T>
+    {
+        private readonly SfGrid3D<T> _grid;
+        public SfGrid3DDebugView(SfGrid3D<T> grid) => _grid = grid;
+        
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[][][] Items
+        {
+            get
+            {
+                int width = _grid.Width;
+                int height = _grid.Height;
+                int depth = _grid.Depth;
+                T[][][] array = new T[width][][];
+                for (int x = 0; x < width; x++)
+                {
+                    array[x] = new T[height][];
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        array[x][y] = new T[depth];
+
+                        for (int z = 0; z < depth; z++)
+                        {
+                            array[x][y][z] = _grid[x, y, z];
+                        }
+                    }
+                }
+                return array;
+            }
+        }
     }
 }

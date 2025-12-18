@@ -1,6 +1,6 @@
 # StructForge
 
-[![StructForge v1.4 Demo](https://raw.githubusercontent.com/FurkanKirat/StructForge/main/Icons/video.jpg)](https://www.youtube.com/watch?v=7c7Pez6-VSE)
+[![StructForge v1.5 Demo](https://raw.githubusercontent.com/FurkanKirat/StructForge/main/Icons/video.png)](https://www.youtube.com/watch?v=7c7Pez6-VSE)
 > *Watch: Benchmarking C# Safe Arrays vs Unsafe Pointers (and why Safe won).*
 
 [![NuGet Downloads](https://img.shields.io/nuget/dt/StructForge.svg)](https://www.nuget.org/packages/StructForge/)
@@ -39,6 +39,11 @@ Benchmarks performed on **Intel Core i7-13650HX, .NET 8.0**.
 
 ## ✨ Key Features
 
+### 🚀 What's New in v1.5.0
+* **SfDictionary is Back:** Fully re-architected for zero-allocation performance.
+* **SfGraph (Core):** Added base Graph data structure.
+* **Debugger Visualizers:** Added comprehensive debug views for all collections (Arrays, Graphs, Lists). No more expanding 10 levels to see your data!
+
 ### ⚡ Zero-Allocation Guarantee
 All collections in StructForge use custom **`struct` Enumerators**.
 * **`foreach` loops allocate 0 bytes of garbage.**
@@ -54,6 +59,9 @@ All array-backed structures expose their internal data safely via `AsSpan()` and
 * **`SfGrid2D` / `SfGrid3D`**: Uses flattened 1D arrays (`z*w*h + y*w + x`) to maximize CPU cache hits, unlike .NET's multi-dimensional arrays which can cause cache misses during column-major traversal.
 * **`SfBitArray` Family**: Bit-packed structures (`1D`, `2D`, `3D`) for boolean maps (Fog of War, Collision), using **8x less memory** than `bool[]`.
 
+### 🔍 Debugger Friendly
+Includes custom **DebuggerTypeProxies** for all collections.
+* View internal items of `SfGraph`, `SfBitArray`, `SfDictionary` clearly in the Visual Studio debugger without expanding complex internals.
 ---
 
 ## 📦 Installation
@@ -93,10 +101,15 @@ Extract the StructForge folder into your Unity project's Packages (or Assets) fo
 ## 📚 Collections Overview
 
 ### 🟢 Linear & Spatial (Zero-Allocation)
+**`SfDictionary<TKey, TValue>`**: **(New in v1.5)** High-performance, allocation-free dictionary using open addressing. Faster lookups than native Dictionary with zero GC overhead.
+
+**`SfGraph<T>`**: **(New in v1.5)** Adjacency list-based Graph structure. Efficiently stores nodes and edges. *Note: Pathfinding algorithms (A*) are scheduled for v1.6.*
 
 **`SfList<T>`**: High-performance dynamic array. Supports `AsSpan()`, `RemoveAtSwap` (O(1) removal), and direct array access.
 
-**`**SfEnumSet<TEnum>`**: Bitmask-based set for Enums. Allocates 2x less memory and performs operations up to 1.7x faster than HashSet.
+**`SfLinkedList<T>`**: Doubly linked list implementation. Useful for scenarios requiring frequent insertions/removals from the middle of the collection.
+
+**`SfEnumSet<TEnum>`**: Bitmask-based set for Enums. Allocates 2x less memory and performs operations up to 1.7x faster than HashSet.
 
 **`SfGrid2D<T>` / `SfGrid3D<T>`**: Cache-friendly spatial grids. Proven to be up to 45% faster than native arrays in complex iterations.
 
@@ -201,11 +214,11 @@ foreach (var log in logs)
 
 ## ⚠️ Important Notes
 
-**Thread Safety**: StructForge collections are not thread-safe by default. This is a design choice to ensure maximum single-threaded performance (avoiding locking overhead). Use external synchronization if accessing from multiple threads.
-
-**SfDictionary**: Temporarily removed in v1.3.0 to re-architect for strict zero-allocation standards. Use `SfHashSet` for unique collections or standard .NET `Dictionary` for key-value pairs.
-
----
+- **Thread Safety**  
+  StructForge collections are **not thread-safe by default**.  
+  This is a design choice to ensure maximum single-threaded performance
+  (avoiding locking overhead).  
+  Use **external synchronization** when accessing from multiple threads.
 
 ## 📄 License
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
@@ -15,6 +16,8 @@ namespace StructForge.Collections
     /// Additional methods: TrimExcess, PeekLast, TryPeekLast, ForEach.
     /// </summary>
     /// <typeparam name="T">Type of elements stored in the queue.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
+    [DebuggerTypeProxy(typeof(SfQueueDebugView<>))]
     public sealed class SfQueue<T> : ISfQueue<T>
     {
         private const int DefaultCapacity = 4;
@@ -109,6 +112,11 @@ namespace StructForge.Collections
 
         #region Enumeration
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfCircularQueueEnumerator<T> GetEnumerator() => new(_buffer, _head, _count);
         /// <inheritdoc/>
@@ -295,5 +303,16 @@ namespace StructForge.Collections
         }
 
         #endregion
+        
+        private string DebuggerDisplay => $"SfQueue<{typeof(T).Name}> (Count = {Count})";
+    }
+    
+    internal class SfQueueDebugView<T>
+    {
+        private readonly SfQueue<T> _sfQueue;
+        public SfQueueDebugView(SfQueue<T> sfQueue) => _sfQueue = sfQueue;
+
+        [DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
+        public T[] Items => _sfQueue.ToArray();
     }
 }

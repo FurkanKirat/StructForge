@@ -14,6 +14,7 @@ namespace StructForge.Collections
     /// O(log n) complexity for insertion, deletion, and lookup operations.
     /// </summary>
     /// <typeparam name="T">The type of elements stored in the tree.</typeparam>
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     [DebuggerTypeProxy(typeof(SfTreeDebugView<>))]
     public sealed class SfAvlTree<T> : ISfDataStructure<T>, ICollection<T>
     {
@@ -79,6 +80,11 @@ namespace StructForge.Collections
                 TryAdd(item);
         }
 
+        /// <summary>
+        /// Returns an enumerator for iterating over the collection.
+        /// Can be used by <c>foreach</c> loops.
+        /// </summary>
+        /// <returns>An enumerator for the collection.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SfAvlTreeInOrderEnumerator GetEnumerator() => new(this);
         /// <inheritdoc/>
@@ -416,44 +422,75 @@ namespace StructForge.Collections
 
         #region Enumerators
         
+        /// <inheritdoc />
         public readonly struct SfPreOrderTraversal: IEnumerable<T>
         {
             private readonly SfAvlTree<T> _tree;
             
+            /// <summary>
+            /// Creates a pre-order travarsel for given tree 
+            /// </summary>
+            /// <param name="tree">The given tree</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfPreOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
 
+            /// <summary>
+            /// Returns an enumerator for iterating over the collection.
+            /// Can be used by <c>foreach</c> loops.
+            /// </summary>
+            /// <returns>An enumerator for the collection.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfAvlTreePreOrderEnumerator GetEnumerator() => new(_tree);
             IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
         
+        /// <inheritdoc />
         public readonly struct SfInOrderTraversal : IEnumerable<T>
         {
             private readonly SfAvlTree<T> _tree;
             
+            /// <summary>
+            /// Creates an in-order travarsel for given tree 
+            /// </summary>
+            /// <param name="tree">The given tree</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfInOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
 
+            /// <summary>
+            /// Returns an enumerator for iterating over the collection.
+            /// Can be used by <c>foreach</c> loops.
+            /// </summary>
+            /// <returns>An enumerator for the collection.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfAvlTreeInOrderEnumerator GetEnumerator() => new(_tree);
             IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
         
+        /// <inheritdoc />
         public readonly struct SfPostOrderTraversal: IEnumerable<T>
         {
             private readonly SfAvlTree<T> _tree;
             
+            /// <summary>
+            /// Creates a post-order travarsel for given tree 
+            /// </summary>
+            /// <param name="tree">The given tree</param>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfPostOrderTraversal(SfAvlTree<T> tree) => _tree = tree;
 
+            /// <summary>
+            /// Returns an enumerator for iterating over the collection.
+            /// Can be used by <c>foreach</c> loops.
+            /// </summary>
+            /// <returns>An enumerator for the collection.</returns>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public SfAvlTreePostOrderEnumerator GetEnumerator() => new(_tree);
             IEnumerator<T> IEnumerable<T>.GetEnumerator() => GetEnumerator();
             IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         }
+        /// <inheritdoc />
         public struct SfAvlTreePreOrderEnumerator : IEnumerator<T>
         {
             private readonly SfAvlTreeNode<T> _root;
@@ -471,6 +508,7 @@ namespace StructForge.Collections
                 _stack.Push(_root);
             }
             
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -488,6 +526,7 @@ namespace StructForge.Collections
                 return true;
             }
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset()
             {
@@ -496,6 +535,9 @@ namespace StructForge.Collections
                 _current = null;
             }
 
+            /// <summary>
+            /// Gives the current element's reference
+            /// </summary>
             public ref T Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -505,9 +547,11 @@ namespace StructForge.Collections
             T IEnumerator<T>.Current => _current.Value;
             object IEnumerator.Current => _current.Value;
 
+            /// <inheritdoc />
             public void Dispose() { }
         }
         
+        /// <inheritdoc />
         public struct SfAvlTreeInOrderEnumerator : IEnumerator<T>
         {
             private readonly SfAvlTreeNode<T> _root;
@@ -526,7 +570,8 @@ namespace StructForge.Collections
 
                 PreparePath(_root);
             }
-            
+
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -541,8 +586,9 @@ namespace StructForge.Collections
 
                 return true;
             }
-            
 
+
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset()
             {
@@ -561,6 +607,9 @@ namespace StructForge.Collections
                 }
             }
 
+            /// <summary>
+            /// Gives the current element's reference
+            /// </summary>
             public ref T Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -570,10 +619,12 @@ namespace StructForge.Collections
             T IEnumerator<T>.Current => _current.Value;
             object IEnumerator.Current => _current.Value;
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
         }
-        
+
+        /// <inheritdoc />
         public struct SfAvlTreePostOrderEnumerator : IEnumerator<T>
         {
             private readonly SfAvlTreeNode<T> _root;
@@ -594,7 +645,8 @@ namespace StructForge.Collections
 
                 PreparePath(_root);
             }
-            
+
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public bool MoveNext()
             {
@@ -619,8 +671,9 @@ namespace StructForge.Collections
 
                 return false;
             }
-            
 
+
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Reset()
             {
@@ -640,6 +693,9 @@ namespace StructForge.Collections
                 }
             }
 
+            /// <summary>
+            /// Gives the current element's reference
+            /// </summary>
             public ref T Current
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -649,11 +705,14 @@ namespace StructForge.Collections
             T IEnumerator<T>.Current => _current.Value;
             object IEnumerator.Current => _current.Value;
 
+            /// <inheritdoc />
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Dispose() { }
         }
 
         #endregion
+        
+        private string DebuggerDisplay => $"SfAvlTree<{typeof(T).Name}> (Count = {Count})";
     }
     
     /// <summary>
