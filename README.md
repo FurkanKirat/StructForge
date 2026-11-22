@@ -9,7 +9,7 @@
 
 **StructForge** is a high-performance, zero-allocation data structures library for .NET and Unity.
 
-Designed for performance-critical applications like **Game Engines**, **Real-Time Systems**, and **High-Frequency Trading**, StructForge bridges the gap between standard collections and raw memory manipulation. It focuses on **CPU cache locality**, **hardware intrinsics (SIMD)**, and **minimizing Garbage Collector (GC) pressure**.
+Designed for performance-critical applications like **Game Engines** and **Real-Time Systems**, StructForge bridges the gap between standard collections and raw memory manipulation. It focuses on **CPU cache locality**, **hardware intrinsics (SIMD)**, and **minimizing Garbage Collector (GC) pressure**.
 
 ---
 
