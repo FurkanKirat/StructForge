@@ -58,6 +58,10 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public TItem Peek() => _heap.Peek().item;
         
+        
+        /// <summary>Returns the priority of the item with the highest/lowest priority without removing it.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public TPriority PeekPriority() => _heap.Peek().priority;
         /// <summary>
         /// Dequeues the item with the highest priority if queue is not empty, otherwise does nothing
         /// </summary>

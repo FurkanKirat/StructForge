@@ -488,7 +488,7 @@ namespace StructForge.Collections
     }
     
     
-    internal class SfLinkedListDebugView<T>
+    internal sealed class SfLinkedListDebugView<T>
     {
         private readonly SfLinkedList<T> _linkedList;
         public SfLinkedListDebugView(SfLinkedList<T> linkedList) => _linkedList = linkedList;

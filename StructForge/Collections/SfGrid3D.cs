@@ -380,7 +380,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfGrid3D<{typeof(T).Name}> (Width = {Width}, Height = {Height}, Depth = {Depth}, Count = {Count})";
     }
 
-    internal class SfGrid3DDebugView<T>
+    internal sealed class SfGrid3DDebugView<T>
     {
         private readonly SfGrid3D<T> _grid;
         public SfGrid3DDebugView(SfGrid3D<T> grid) => _grid = grid;

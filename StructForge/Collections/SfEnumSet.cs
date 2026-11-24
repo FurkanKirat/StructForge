@@ -420,7 +420,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfEnumSet<{typeof(TEnum).Name}> (Count = {Count})";
     }
 
-    internal class SfEnumSetDebuggerView<TEnum> where TEnum : Enum
+    internal sealed class SfEnumSetDebuggerView<TEnum> where TEnum : Enum
     {
         private readonly SfEnumSet<TEnum> _set;
         public SfEnumSetDebuggerView(SfEnumSet<TEnum> set) => _set = set;

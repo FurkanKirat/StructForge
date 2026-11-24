@@ -243,7 +243,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfStack<{typeof(T).Name}> (Count = {Count})";
     }
 
-    internal class SfStackDebugView<T>
+    internal sealed class SfStackDebugView<T>
     {
         private readonly SfStack<T> _sfStack;
         public SfStackDebugView(SfStack<T> sfStack) => _sfStack = sfStack;

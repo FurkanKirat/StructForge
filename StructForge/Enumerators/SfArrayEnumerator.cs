@@ -54,5 +54,25 @@ namespace StructForge.Enumerators
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose() { }
+        
     }
+    
+    public readonly struct SfArrayEnumerable<T>
+    {
+        private readonly T[] _buffer;
+        private readonly int _length;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal SfArrayEnumerable(T[] buffer, int length)
+        {
+            _buffer = buffer;
+            _length = length;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SfArrayEnumerator<T> GetEnumerator() => new(_buffer, _length);
+    }
+
+    
+    
 }

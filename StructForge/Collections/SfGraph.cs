@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using StructForge.Comparers;
+using StructForge.Enumerators;
 using StructForge.Helpers;
 
 namespace StructForge.Collections
@@ -11,7 +12,7 @@ namespace StructForge.Collections
     /// <inheritdoc cref="ISfGraph{V}" />
     [DebuggerTypeProxy(typeof(SfGraphDebugView<>))]
     [DebuggerDisplay("{DebuggerDisplay,nq}")]
-    public class SfGraph<TVertex> : ISfGraph<TVertex>, ISfDataStructure<TVertex>
+    public sealed class SfGraph<TVertex> : ISfGraph<TVertex>, ISfDataStructure<TVertex>
     {
         /// <summary>
         /// 
@@ -34,7 +35,7 @@ namespace StructForge.Collections
             }
         }
         private readonly SfDictionary<TVertex, SfList<SfGraphEdge>> _adjacencyList;
-        private readonly IEqualityComparer<TVertex> _comparer;
+        internal readonly IEqualityComparer<TVertex> Comparer;
         private int _edgeCount;
 
         /// <inheritdoc />
@@ -72,8 +73,8 @@ namespace StructForge.Collections
         /// <param name="comparer">Equality Comparer for internal dictionary</param>
         public SfGraph(int capacity = 16, IEqualityComparer<TVertex> comparer = null)
         {
-            _comparer = comparer ?? SfEqualityComparers<TVertex>.Default;
-            _adjacencyList = new SfDictionary<TVertex, SfList<SfGraphEdge>>(capacity, _comparer);
+            Comparer = comparer ?? SfEqualityComparers<TVertex>.Default;
+            _adjacencyList = new SfDictionary<TVertex, SfList<SfGraphEdge>>(capacity, Comparer);
         }
 
         /// <inheritdoc />
@@ -83,7 +84,7 @@ namespace StructForge.Collections
         }
 
         /// <inheritdoc />
-        public void AddEdge(TVertex from, TVertex to, float weight)
+        public void AddEdge(TVertex from, TVertex to, float weight = 0f)
         {
             if (!_adjacencyList.TryGetValue(from, out var list))
             {
@@ -99,7 +100,7 @@ namespace StructForge.Collections
             bool edgeExists = false;
             foreach(var edge in list)
             {
-                if (_comparer.Equals(edge.Target, to))
+                if (Comparer.Equals(edge.Target, to))
                 {
                     edgeExists = true; 
                     break;
@@ -143,7 +144,7 @@ namespace StructForge.Collections
             {
                 for (int i = 0; i < list.Count; i++)
                 {
-                    if (_comparer.Equals(list[i].Target, to))
+                    if (Comparer.Equals(list[i].Target, to))
                     {
                         list.RemoveAt(i);
                         _edgeCount--;
@@ -165,7 +166,7 @@ namespace StructForge.Collections
             if (_adjacencyList.TryGetValue(from, out SfList<SfGraphEdge> list))
             {
                 foreach(var edge in list)
-                    if (_comparer.Equals(edge.Target, to))
+                    if (Comparer.Equals(edge.Target, to))
                         return true;
             }
             return false;
@@ -177,7 +178,7 @@ namespace StructForge.Collections
         {
             if (_adjacencyList.TryGetValue(from, out SfList<SfGraphEdge> list))
                 foreach (SfGraphEdge edge in list)
-                    if(_comparer.Equals(edge.Target, to))
+                    if(Comparer.Equals(edge.Target, to))
                         return edge.Weight;
             
             return float.PositiveInfinity;
@@ -190,13 +191,28 @@ namespace StructForge.Collections
         /// <returns>Neighbors of given vertex</returns>
         /// <exception cref="KeyNotFoundException">If vertex does not exist throws KeyNotFoundException</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SfList<SfGraphEdge> GetNeighbors(TVertex v)
+        public SfArrayEnumerable<SfGraphEdge> GetNeighbors(TVertex v)
         {
             if (_adjacencyList.TryGetValue(v, out var list))
-                return list;
+                return new SfArrayEnumerable<SfGraphEdge>(list.Buffer, list.Count);
             
             throw new KeyNotFoundException($"Vertex {v} not found in graph.");
         }
+        
+        /// <summary>
+        /// Returns the neighbor count of given vertex
+        /// </summary>
+        /// <param name="v">Given Vertex</param>
+        /// <returns>Neighbor count of the given vertex</returns>
+        /// <exception cref="KeyNotFoundException">If vertex does not exist throws KeyNotFoundException</exception>
+        public int GetNeighborCount(TVertex v)
+        {
+            if (_adjacencyList.TryGetValue(v, out var list))
+                return list.Count;
+
+            throw new KeyNotFoundException();
+        }
+
         
         /// <summary>
         /// Returns an enumerator for iterating over the collection.
@@ -231,7 +247,7 @@ namespace StructForge.Collections
         /// <inheritdoc />
         public bool Contains(TVertex item, IEqualityComparer<TVertex> comparer)
         {
-            if (Equals(_comparer, comparer))
+            if (Equals(Comparer, comparer))
                 return _adjacencyList.ContainsKey(item);
             
             foreach (var v in _adjacencyList.Keys)
@@ -324,13 +340,8 @@ namespace StructForge.Collections
                 
                         try
                         {
-                            var neighbors = _graph.GetNeighbors(from);
-                            
-                            if (neighbors == null || neighbors.Count == 0) continue;
-                            
-                            for (int j = 0; j < neighbors.Count; j++)
+                            foreach (var edge in _graph.GetNeighbors(from))
                             {
-                                var edge = neighbors[j]; 
                                 result.Add(new SfGraphEdgeView(from, edge.Target, edge.Weight));
                             }
                         }

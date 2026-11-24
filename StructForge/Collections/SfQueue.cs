@@ -26,7 +26,7 @@ namespace StructForge.Collections
 
         private T[] _buffer;
         private readonly float _growthFactor;
-        private int _head, _count;
+        private int _head, _tail, _count;
 
         /// <inheritdoc/>
         public int Count 
@@ -50,16 +50,7 @@ namespace StructForge.Collections
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _buffer.Length;
         }
-
-        /// <summary>
-        /// Gets the index of the first empty slot in the circular array.
-        /// </summary>
-        private int FirstEmpty
-        {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => (_head + _count) % Capacity;
-        }
-
+        
         #region Constructors
 
         /// <summary>
@@ -105,6 +96,7 @@ namespace StructForge.Collections
             }
 
             _head = 0;
+            _tail = _count == _buffer.Length ? 0 : _count;
             _growthFactor = Math.Max(growthFactor, MinGrowthFactor);
         }
 
@@ -128,8 +120,17 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
-            for (int i = 0; i < _count; i++)
-                action(_buffer[(_head + i) % Capacity]);
+            if (_count == 0) return;
+
+            if (_head < _tail)
+            {
+                for (int i = _head; i < _tail; i++) action(_buffer[i]);
+            }
+            else
+            {
+                for (int i = _head; i < _buffer.Length; i++) action(_buffer[i]);
+                for (int i = 0; i < _tail; i++) action(_buffer[i]);
+            }
         }
 
         #endregion
@@ -140,8 +141,16 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Enqueue(T item)
         {
-            GrowIfNeeded(_count + 1);
-            _buffer[FirstEmpty] = item;
+            if (_count == _buffer.Length)
+                GrowIfNeeded();
+            
+            _buffer[_tail] = item;
+            _tail++;
+            if (_tail == _buffer.Length)
+            {
+                _tail = 0;
+            }
+
             _count++;
         }
 
@@ -167,7 +176,7 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryDequeue(out T item)
         {
-            if (IsEmpty)
+            if (_count == 0)
             {
                 item = default;
                 return false;
@@ -175,7 +184,11 @@ namespace StructForge.Collections
 
             item = _buffer[_head];
             _buffer[_head] = default;
-            _head = (_head + 1) % Capacity;
+            _head++;
+            if (_head == _buffer.Length)
+            {
+                _head = 0;
+            }
             _count--;
             return true;
         }
@@ -196,9 +209,18 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void Clear()
         {
-            for (int i = 0; i < _count; i++)
-                _buffer[(_head + i) % Capacity] = default;
+            if (_head < _tail)
+            {
+                Array.Clear(_buffer, _head, _count);
+            }
+            else
+            {
+                Array.Clear(_buffer, _head, _buffer.Length - _head);
+                Array.Clear(_buffer, 0, _tail);
+            }
+            
             _head = 0;
+            _tail = 0;
             _count = 0;
         }
 
@@ -208,10 +230,28 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
-            for (int i = 0; i < _count; i++)
+            comparer ??= SfEqualityComparers<T>.Default;
+            if (_head < _tail)
             {
-                int index = (_head + i) % Capacity;
-                if (comparer.Equals(_buffer[index], item)) return true;
+                for (int i = _head; i < _tail; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
+            }
+            else
+            {
+                for (int i = _head; i < _buffer.Length; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
+                
+                for (int i = 0; i < _tail; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
             }
             return false;
         }
@@ -226,8 +266,19 @@ namespace StructForge.Collections
             if (arrayIndex + _count > array.Length) 
                 SfThrowHelper.ThrowArgument("Destination array is not large enough.");
 
-            for (int i = 0; i < _count; i++)
-                array[arrayIndex + i] = _buffer[(_head + i) % Capacity];
+            if (_count == 0)
+                return;
+            
+            if (_head < _tail)
+            {
+                Array.Copy(_buffer, _head, array, arrayIndex, _count);
+            }
+            else
+            {
+                int headChunk = _buffer.Length - _head;
+                Array.Copy(_buffer, _head, array, arrayIndex, headChunk);
+                Array.Copy(_buffer, 0, array, arrayIndex + headChunk, _tail);
+            }
         }
 
         /// <inheritdoc/>
@@ -245,13 +296,24 @@ namespace StructForge.Collections
         /// <summary>Reduces the underlying array capacity to fit the current count.</summary>
         public void TrimExcess()
         {
-            if (_count < Capacity)
+            if (_count < _buffer.Length * 0.9)
             {
                 T[] newArray = new T[_count];
-                for (int i = 0; i < _count; i++)
-                    newArray[i] = _buffer[(_head + i) % Capacity];
+                if (_count > 0)
+                {
+                    if (_head < _tail)
+                    {
+                        Array.Copy(_buffer, _head, newArray, 0, _count);
+                    }
+                    else
+                    {
+                        Array.Copy(_buffer, _head, newArray, 0, _buffer.Length - _head);
+                        Array.Copy(_buffer, 0, newArray, _buffer.Length - _head, _tail);
+                    }
+                }
                 _buffer = newArray;
                 _head = 0;
+                _tail = (_count == newArray.Length) ? 0 : _count;
             }
         }
 
@@ -259,11 +321,11 @@ namespace StructForge.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T PeekLast()
         {
-            if (IsEmpty) 
+            if (_count == 0) 
                 SfThrowHelper.ThrowInvalidOperation("Queue is empty");
             
-            int lastIndex = (_head + _count - 1) % Capacity;
-            return _buffer[lastIndex];
+            int index = _tail == 0 ? _buffer.Length - 1 : _tail - 1;
+            return _buffer[index];
         }
 
         /// <inheritdoc/>
@@ -275,8 +337,9 @@ namespace StructForge.Collections
                 item = default;
                 return false;
             }
-            int lastIndex = (_head + _count - 1) % Capacity;
-            item = _buffer[lastIndex];
+            
+            int index = _tail == 0 ? _buffer.Length - 1 : _tail - 1;
+            item = _buffer[index];
             return true;
         }
 
@@ -288,18 +351,27 @@ namespace StructForge.Collections
         /// Ensures the internal array has enough capacity to hold the specified number of elements.
         /// Grows the array if needed, preserving existing elements in order.
         /// </summary>
-        /// <param name="newCount">The total number of elements the array should accommodate.</param>
-        private void GrowIfNeeded(int newCount)
+        private void GrowIfNeeded()
         {
-            if (newCount > Capacity)
+            int newCapacity = (int)(_buffer.Length * _growthFactor);
+            T[] newArray = new T[newCapacity];
+
+            if (_count > 0)
             {
-                int newCapacity = Math.Max((int)(Capacity * _growthFactor), newCount);
-                T[] newArray = new T[newCapacity];
-                for (int i = 0; i < _count; i++)
-                    newArray[i] = _buffer[(_head + i) % Capacity];
-                _buffer = newArray;
-                _head = 0;
+                if (_head < _tail)
+                {
+                    Array.Copy(_buffer, _head, newArray, 0, _count);
+                }
+                else
+                {
+                    Array.Copy(_buffer, _head, newArray, 0, _buffer.Length - _head);
+                    Array.Copy(_buffer, 0, newArray, _buffer.Length - _head, _tail);
+                }
             }
+
+            _buffer = newArray;
+            _head = 0;
+            _tail = _count;
         }
 
         #endregion
@@ -307,7 +379,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfQueue<{typeof(T).Name}> (Count = {Count})";
     }
     
-    internal class SfQueueDebugView<T>
+    internal sealed class SfQueueDebugView<T>
     {
         private readonly SfQueue<T> _sfQueue;
         public SfQueueDebugView(SfQueue<T> sfQueue) => _sfQueue = sfQueue;

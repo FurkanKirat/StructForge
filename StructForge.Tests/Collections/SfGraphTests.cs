@@ -82,7 +82,7 @@ namespace StructForge.Tests.Collections
 
             var neighbors = graph.GetNeighbors(1);
 
-            Assert.Equal(2, neighbors.Count);
+            Assert.Equal(2, graph.GetNeighborCount(1));
             
             bool found2 = false, found3 = false;
             foreach (var edge in neighbors)
@@ -91,6 +91,98 @@ namespace StructForge.Tests.Collections
                 if (edge.Target == 3) found3 = true;
             }
             Assert.True(found2 && found3);
+        }
+        
+        [Fact]
+        public void GetNeighbors_Returns_Only_Direct_Outgoing_Edges()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddEdge(1, 2);
+            graph.AddEdge(1, 3);
+            graph.AddEdge(2, 4);
+
+            var neighbors = new List<int>();
+            foreach (var edge in graph.GetNeighbors(1))
+            {
+                neighbors.Add(edge.Target);
+            }
+
+            Assert.Equal(2, neighbors.Count);
+            Assert.Contains(2, neighbors);
+            Assert.Contains(3, neighbors);
+            Assert.DoesNotContain(4, neighbors);
+        }
+
+        [Fact]
+        public void GetNeighbors_Returns_Empty_For_Node_With_No_Outgoing_Edges()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddEdge(1, 2);
+            
+            var count = 0;
+            foreach (var _ in graph.GetNeighbors(2))
+            {
+                count++;
+            }
+
+            Assert.Equal(0, count);
+        }
+
+        [Fact]
+        public void GetNeighbors_Respects_Directionality()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddEdge(1, 2); // 1 -> 2
+
+            var neighborsOf1 = new List<int>();
+            foreach(var e in graph.GetNeighbors(1)) neighborsOf1.Add(e.Target);
+
+            var neighborsOf2 = new List<int>();
+            foreach(var e in graph.GetNeighbors(2)) neighborsOf2.Add(e.Target);
+
+            Assert.Single(neighborsOf1);
+            Assert.Contains(2, neighborsOf1);
+
+            Assert.Empty(neighborsOf2);
+        }
+
+        [Fact]
+        public void GetNeighbors_Handles_Self_Loops()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddEdge(1, 1);
+
+            var neighbors = new List<int>();
+            foreach (var edge in graph.GetNeighbors(1))
+            {
+                neighbors.Add(edge.Target);
+            }
+
+            Assert.Single(neighbors);
+            Assert.Equal(1, neighbors[0]);
+        }
+
+        [Fact]
+        public void GetNeighbors_Throws_If_Node_Does_Not_Exist()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddVertex(1);
+
+            Assert.Throws<KeyNotFoundException>(() =>
+            {
+                foreach (var _ in graph.GetNeighbors(99)) { }
+            });
+        }
+
+        [Fact]
+        public void GetNeighbors_Enumerates_Without_Allocation()
+        {
+            var graph = new SfGraph<int>();
+            graph.AddEdge(1, 2);
+
+            var enumerator = graph.GetNeighbors(1);
+            
+            Assert.True(enumerator.GetType().IsValueType, "GetNeighbors should return a struct enumerator to avoid GC");
         }
     }
 }

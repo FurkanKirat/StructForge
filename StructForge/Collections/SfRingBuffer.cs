@@ -82,8 +82,17 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public void ForEach(Action<T> action)
         {
-            for (int i = 0; i < _count; i++)
-                action(_buffer[(_head + i) % Capacity]);
+            if (_count == 0) return;
+
+            if (_head < _tail)
+            {
+                for (int i = _head; i < _tail; i++) action(_buffer[i]);
+            }
+            else
+            {
+                for (int i = _head; i < _buffer.Length; i++) action(_buffer[i]);
+                for (int i = 0; i < _tail; i++) action(_buffer[i]);
+            }
         }
 
         #endregion
@@ -96,10 +105,28 @@ namespace StructForge.Collections
         /// <inheritdoc/>
         public bool Contains(T item, IEqualityComparer<T> comparer)
         {
-            for (int i = 0; i < _count; i++)
+            comparer ??= SfEqualityComparers<T>.Default;
+            if (_head < _tail)
             {
-                int index = (_head + i) % Capacity;
-                if (comparer.Equals(_buffer[index], item)) return true;
+                for (int i = _head; i < _tail; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
+            }
+            else
+            {
+                for (int i = _head; i < _buffer.Length; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
+                
+                for (int i = 0; i < _tail; i++)
+                {
+                    if (comparer.Equals(_buffer[i], item))
+                        return true;
+                }
             }
             return false;
         }
@@ -309,7 +336,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfRingBuffer<{typeof(T).Name}> (Capacity = {Capacity}, Count = {Count})";
     }
     
-    internal class SfRingBufferDebugView<T>
+    internal sealed class SfRingBufferDebugView<T>
     {
         private readonly SfRingBuffer<T> _sfRingBuffer;
         public SfRingBufferDebugView(SfRingBuffer<T> sfRingBuffer) => _sfRingBuffer = sfRingBuffer;

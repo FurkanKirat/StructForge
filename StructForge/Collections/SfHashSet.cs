@@ -458,7 +458,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfHashSet<{typeof(T).Name}> (Count = {Count})";
     }
     
-    internal class SfHashSetDebugView<T>
+    internal sealed class SfHashSetDebugView<T>
     {
         private readonly SfHashSet<T> _hashSet;
         public SfHashSetDebugView(SfHashSet<T> hashSet) => _hashSet = hashSet;

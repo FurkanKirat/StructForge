@@ -267,7 +267,7 @@ namespace StructForge.Collections
         private string DebuggerDisplay => $"SfSortedSet<{typeof(T).Name}> (Count = {Count})";
     }
 
-    internal class SfSortedSetDebugView<T>
+    internal sealed class SfSortedSetDebugView<T>
     {
         private readonly SfSortedSet<T> _sfStack;
         public SfSortedSetDebugView(SfSortedSet<T> sfStack) => _sfStack = sfStack;
